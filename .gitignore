@@ -1,0 +1,7 @@
+.env
+.vscode
+__pycache__
+.vscode/.ropeproject/config.py
+stop MCD.bat
+start MCD.bat
+log MCD.bat

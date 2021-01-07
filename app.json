@@ -1,0 +1,29 @@
+{
+  "name": "MCDgram",
+  "description": "A bot made to scrape multporn.net and rule34.xxx",
+  "keywords": [
+    "python",
+    "pyrogram",
+    "telegram"
+  ],
+  "formation": {
+    "worker": {
+      "quantity": 1,
+      "size": "free"
+    }
+  },
+  "env": {
+    "API_ID": {
+      "description": "App api_id from https://my.telegram.org"
+    },
+    "API_HASH": {
+      "description": "App api_hash from https://my.telegram.org"
+    },
+    "BOT_TOKEN": {
+      "description": "Bot token from https://t.me/BotFather"
+    },
+    "OWNER_ID": {
+      "description": "The telegram identifier of you, the owner (NOT your username)"
+    }
+  }
+}
