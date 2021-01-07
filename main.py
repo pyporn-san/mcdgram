@@ -93,7 +93,7 @@ def parseComic(title, link, pages, tags=None, ongoing=None):
     post = f'[{title}]({link})\n\n'
     if(ongoing != None):
         post += f'Status: {"Ongoing" if ongoing else "Completed"}\n\n'
-    if(tags != None):
+    if(tags):
         post += 'Tags:\n'
         for tag in tags:
             post += f'#{tag.capitalize().replace(" ","_").replace("-","_")} '
