@@ -66,7 +66,7 @@ async def uploadImage(img, handler=None):
         return img
 
 
-async def uplaodToTelegraph(links, name, handler=None):
+async def uplaodToTelegraph(links, handler=None):
     tasks = [asyncio.create_task(uploadImage(link, handler)) for link in links]
     uploaded = await asyncio.gather(*tasks)
     return uploaded
@@ -76,7 +76,7 @@ async def sendComic(links, name, handler=None):
     # Uploading files to telegra.ph
     print(name, len(links))
     try:
-        uploaded = await uplaodToTelegraph(links, name, handler)
+        uploaded = await uplaodToTelegraph(links, handler)
         print(f"Uploading succes for {name}")
     except Exception as er:
         print(f"Fallback on {name} becuase {er}")
@@ -127,7 +127,7 @@ async def getRule34(client, message):
     r34 = rule34.Rule34(asyncio.get_event_loop())
     # Number of things to return
     if(message.command[1].isnumeric()):
-        limit = min(int(message.command[1]), 10)
+        limit = int(message.command[1])
         firstIsNumber = True
     else:
         limit = 1
@@ -142,38 +142,31 @@ async def getRule34(client, message):
             msg = await msg.edit_text(f"Found {limit} result{'s' if limit>1 else ''}. Sending")
         else:
             msg = await msg.edit_text(f"Found only {len(images)} result{'s' if len(images)>1 else ''}. Sending")
-        links = []
         mediaGroup = []
-        gifs = []
-        backupPhotoLinks = []
     except (KeyError, TypeError):
         images = []
     if(images):
-        images = random.sample(images, k=min(len(images), limit))
-        for image in images:
-            try:
-                if(image.file_url.split(".")[-1] == "webm"):
-                    links.append(image.file_url)
-                elif(image.file_url.split(".")[-1] == "gif"):
-                    gifs.append(image.file_url)
-                else:
-                    mediaGroup.append(types.InputMediaPhoto(image.file_url))
-                    backupPhotoLinks.append(image.file_url)
-            except:
-                pass
-        if(mediaGroup):
-            try:
-                await message.reply_media_group(mediaGroup)
-            except:
-                links = backupPhotoLinks+links
-        if(gifs):
-            for gif in gifs:
+        try:
+            images = random.sample(images, k=min(len(images), limit))
+            if(len(images)>10):
+                raise uploadError
+            for image in images:
                 try:
-                    await message.reply_animation(gif)
+                    if(image.file_url.split(".")[-1] in ("webm","gif")):
+                        raise uploadError
+                    else:
+                        mediaGroup.append(types.InputMediaPhoto(image.file_url))
                 except:
-                    links = [gif]+links
-        if(links):
-            await message.reply_text("\n".join(links), disable_web_page_preview=True)
+                    raise uploadError
+            if(mediaGroup):
+                try:
+                    await message.reply_media_group(mediaGroup)
+                except:
+                    raise uploadError
+        except uploadError:
+            await msg.edit_text(msg.text+f"\nUploading to Telegraph")
+            link = await sendComic([rule34.file_url for rule34 in images], verboseQuery)
+            await message.reply_text(parseComic(verboseQuery, link, len(images)))
     else:
         await msg.edit_text(f"Found no results for tags: {verboseQuery}")
 
