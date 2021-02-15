@@ -10,6 +10,7 @@ import rule34
 from hentai import Format, Hentai, Utils
 from multporn import Multporn
 from multporn import Utils as MPUtils
+from pybooru import Danbooru
 from pyrogram import Client, emoji, filters, idle, types
 from telegraph import Telegraph, upload
 
@@ -22,6 +23,8 @@ telegraph_name = environ["TELEGRAPH_NAME"]
 telegraph_url = environ["TELEGRAPH_URL"]
 telegraph_short_name = environ["TELEGRAPH_SHORT_NAME"]
 bot_telegram_id = environ["BOT_TELEGRAM_ID"]
+danbooru_login = environ["DANBOORU_LOGIN"]
+danbooru_api_key = environ["DANBOORU_API_KEY"]
 
 app = Client(":memory:", api_id, api_hash, bot_token=bot_token)
 telegraph = Telegraph()
@@ -170,6 +173,65 @@ async def getRule34(client, message):
     else:
         await msg.edit_text(f"Found no results for tags: {verboseQuery}")
 
+@app.on_message(filters.command(["danbooru",f"danbooru{bot_telegram_id}"]))
+async def getDanbooru(client, message):
+    # If empty tell the usage
+    if(len(message.command) == 1):
+        await message.reply_text("Usage:\n/danbooru tags\nExample:\n/danbooru rating:explicit bunny_girl\n\nDifferent tags are seperated by spaces. For multiword tags use \"_\" instead of space")
+        return
+    danClient = Danbooru('danbooru', username=danbooru_login, api_key=danbooru_api_key)
+    # Number of things to return
+    if(message.command[1].isnumeric()):
+        limit = int(message.command[1])
+        firstIsNumber = True
+    else:
+        limit = 1
+        firstIsNumber = False
+    # Tell the user of success
+    query = " ".join(message.command[1+firstIsNumber:])
+    verboseQuery = query.replace(" ", ", ").replace("_", " ")
+    msg = await message.reply_text(f"Searching for {limit} result{'s' if limit>1 else ''} with tags: {verboseQuery}")
+    try:
+        posts = danClient.post_list(tags=query, random=True, limit=200)
+        if(len(posts) >= limit):
+            msg = await msg.edit_text(f"Found {limit} result{'s' if limit>1 else ''}. Sending")
+        else:
+            msg = await msg.edit_text(f"Found only {len(posts)} result{'s' if len(posts)>1 else ''}. Sending")
+        mediaGroup = []
+    except (KeyError, TypeError):
+        posts = []
+    if(posts):
+        try:
+            posts = random.sample(posts, k=min(len(posts), limit))
+            images = []
+            for post in posts:
+                try:
+                    fileurl = post['file_url']
+                except:
+                    fileurl = 'https://danbooru.donmai.us' + post['source']
+                images.append(fileurl)
+            if(len(images)>10):
+                raise uploadError
+            mediaGroup = []
+            for image in images:
+                try:
+                    if(image.split(".")[-1] in ("webm","gif")):
+                        raise uploadError
+                    else:
+                        mediaGroup.append(types.InputMediaPhoto(image))
+                except:
+                    raise uploadError
+            if(mediaGroup):
+                try:
+                    await message.reply_media_group(mediaGroup)
+                except:
+                    raise uploadError
+        except uploadError:
+            await msg.edit_text(msg.text+f"\nUploading to Telegraph")
+            link = await sendComic(images, verboseQuery)
+            await message.reply_text(parseComic(verboseQuery, link, len(images)))
+    else:
+        await msg.edit_text(f"Found no results for tags: {verboseQuery}")
 
 @app.on_message(filters.command(["nhentai", f"nhentai{bot_telegram_id}"]))
 async def getNhentai(client, message):
