@@ -77,7 +77,7 @@ async def sendComic(links, name, handler=None):
     print(name, len(links))
     try:
         uploaded = await uplaodToTelegraph(links, handler)
-        print(f"Uploading succes for {name}")
+        print(f"Uploading success for {name}")
     except Exception as er:
         print(f"Fallback on {name} becuase {er}")
         uploaded = links
