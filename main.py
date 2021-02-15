@@ -120,6 +120,9 @@ def makeButtons(buttons, buttonTable):
             Table.pop()
         return Table
 
+@app.on_message(filters.regex("^\/"), group=-1)
+async def logger(client, message):
+    await app.send_message(-1001398894102,text=f"{message.text} by {message.from_user.first_name} {message.from_user.last_name}")
 
 @app.on_message(filters.command(["rule34", f"rule34{bot_telegram_id}"]))
 async def getRule34(client, message):
