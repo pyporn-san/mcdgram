@@ -1,12 +1,12 @@
-hentai==3.1.5
+hentai==3.2.4
 telegraph==1.4.1
-requests==2.24.0
+requests==2.25.1
 urllib3==1.25.11
-rule34==1.7.4
-pathvalidate==2.3.0
+rule34==1.8.1
+pathvalidate==2.3.2
 Pyrogram==1.1.13
 beautifulsoup4==4.9.3
 python-dotenv==0.15.0
 TgCrypto==1.2.2
-Multporn==0.0.6
+Multporn==1.0.2
 pybooru==4.2.2
