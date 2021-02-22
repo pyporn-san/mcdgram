@@ -167,12 +167,14 @@ async def getRule34(client, message):
             if(mediaGroup):
                 try:
                     await message.reply_media_group(mediaGroup)
+                    await msg.delete()
                 except:
                     raise uploadError
         except uploadError:
             await msg.edit_text(msg.text+f"\nUploading to Telegraph")
             link = await sendComic([rule34.file_url for rule34 in images], verboseQuery)
             await message.reply_text(parseComic(verboseQuery, link, len(images)))
+            await msg.delete()
     else:
         await msg.edit_text(f"Found no results for tags: {verboseQuery}")
 
@@ -227,12 +229,14 @@ async def getDanbooru(client, message):
             if(mediaGroup):
                 try:
                     await message.reply_media_group(mediaGroup)
+                    await msg.delete()
                 except:
                     raise uploadError
         except uploadError:
             await msg.edit_text(msg.text+f"\nUploading to Telegraph")
             link = await sendComic(images, verboseQuery)
             await message.reply_text(parseComic(verboseQuery, link, len(images)))
+            await msg.delete()
     else:
         await msg.edit_text(f"Found no results for tags: {verboseQuery}")
 
