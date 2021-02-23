@@ -8,5 +8,5 @@ Pyrogram==1.1.13
 beautifulsoup4==4.9.3
 python-dotenv==0.15.0
 TgCrypto==1.2.2
-Multporn==1.0.2
+Multporn==1.1.0
 pybooru==4.2.2
