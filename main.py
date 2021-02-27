@@ -287,9 +287,9 @@ async def getMultporn(client, message):
         return
     elif(message.command[1].lower().startswith("https://multporn.net") or message.command[1].lower().startswith("multporn.net")):
         comic = await async_wrap(Multporn)(message.command[1])
-        msg = await message.reply_text(f"{comic.name}\n\nPages: {len(comic.imageUrls)}")
-        link = await sendComic(comic.imageUrls, comic.name, handler=comic._Multporn__handler)
-        await msg.edit_text(parseComic(comic.name, link, len(comic.imageUrls), tags=comic.tags, ongoing=comic.ongoing))
+        msg = await message.reply_text(f"{comic.name}\n\nPages: {len(comic.contentUrls)}")
+        link = await sendComic(comic.contentUrls, comic.name, handler=comic._Multporn__handler)
+        await msg.edit_text(parseComic(comic.name, link, len(comic.contentUrls), tags=comic.tags, ongoing=comic.ongoing))
         return
     else:
         comicList = await async_wrap(MPUtils.Search)(" ".join(message.command[1:]))
@@ -340,8 +340,8 @@ async def processCallback(client, callback_query):
             msg = await callback_query.message.edit_text(f"Chosen: {chosenLink}")
             comic = Multporn(chosenLink)
             msg = await msg.edit_text(f"chosen: [{comic.name}]({chosenLink})")
-            link = await sendComic(comic.imageUrls, comic.name)
-            await msg.edit_text(parseComic(comic.name, link, len(comic.imageUrls), tags=comic.tags, ongoing=comic.ongoing))
+            link = await sendComic(comic.contentUrls, comic.name)
+            await msg.edit_text(parseComic(comic.name, link, len(comic.contentUrls), tags=comic.tags, ongoing=comic.ongoing))
             return
     except ValueError:
         await callback_query.message.reply_text("Uuuuuuuuhhhh\nYou shoudnlt've seen this")
