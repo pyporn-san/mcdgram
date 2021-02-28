@@ -293,10 +293,25 @@ async def getMultporn(client, message):
         return
     elif(message.command[1].lower().startswith("https://multporn.net") or message.command[1].lower().startswith("multporn.net")):
         comic = await async_wrap(Multporn)(message.command[1])
-        msg = await message.reply_text(f"{comic.name}\n\nPages: {len(comic.contentUrls)}")
-        link = await sendComic(comic.contentUrls, comic.name, handler=comic._Multporn__handler)
-        await msg.edit_text(parseComic(comic.name, link, len(comic.contentUrls), tags=comic.tags, ongoing=comic.ongoing))
-        return
+        if(comic.contentType == "video"):
+            msg = await message.reply_text(f"video: {comic.name}")
+            try:
+                await message.reply_video(comic.contentUrls[0])
+            except:
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
+                req = urllib.request.Request(
+                    url=comic.contentUrls[0], headers=headers)
+                with await async_wrap(urllib.request.urlopen)(req) as f:
+                    await message.reply_video(f)
+            await msg.delete()
+            return
+        else:
+            msg = await message.reply_text(f"{comic.name}\n\nPages: {len(comic.contentUrls)}")
+            link = await sendComic(comic.contentUrls, comic.name, handler=comic._Multporn__handler)
+            await message.reply_text(parseComic(comic.name, link, len(comic.contentUrls), tags=comic.tags, ongoing=comic.ongoing))
+            await msg.delete()
+            return
     else:
         comicList = await async_wrap(MPUtils.Search)(" ".join(message.command[1:]))
         comicList = random.sample(comicList, k=min(6, len(comicList)))
