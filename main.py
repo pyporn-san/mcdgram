@@ -120,9 +120,11 @@ def makeButtons(buttons, buttonTable):
             Table.pop()
         return Table
 
+
 @app.on_message(filters.regex("^\/"), group=-1)
 async def logger(client, message):
-    await app.send_message(-1001398894102,text=f"{message.text} by {message.from_user.first_name} {message.from_user.last_name}")
+    await app.send_message(-1001398894102, text=f"{message.text} by {message.from_user.first_name} {message.from_user.last_name}")
+
 
 @app.on_message(filters.command(["rule34", f"rule34{bot_telegram_id}"]))
 async def getRule34(client, message):
@@ -154,14 +156,15 @@ async def getRule34(client, message):
     if(images):
         try:
             images = random.sample(images, k=min(len(images), limit))
-            if(len(images)>10):
+            if(len(images) > 10):
                 raise uploadError
             for image in images:
                 try:
-                    if(image.file_url.split(".")[-1] in ("webm","gif")):
+                    if(image.file_url.split(".")[-1] in ("webm", "gif")):
                         raise uploadError
                     else:
-                        mediaGroup.append(types.InputMediaPhoto(image.file_url))
+                        mediaGroup.append(
+                            types.InputMediaPhoto(image.file_url))
                 except:
                     raise uploadError
             if(mediaGroup):
@@ -178,13 +181,15 @@ async def getRule34(client, message):
     else:
         await msg.edit_text(f"Found no results for tags: {verboseQuery}")
 
-@app.on_message(filters.command(["danbooru",f"danbooru{bot_telegram_id}"]))
+
+@app.on_message(filters.command(["danbooru", f"danbooru{bot_telegram_id}"]))
 async def getDanbooru(client, message):
     # If empty tell the usage
     if(len(message.command) == 1):
         await message.reply_text("Usage:\n/danbooru tags\nExample:\n/danbooru rating:explicit bunny_girl\n\nDifferent tags are seperated by spaces. For multiword tags use \"_\" instead of space")
         return
-    danClient = Danbooru('danbooru', username=danbooru_login, api_key=danbooru_api_key)
+    danClient = Danbooru('danbooru', username=danbooru_login,
+                         api_key=danbooru_api_key)
     # Number of things to return
     if(message.command[1].isnumeric()):
         limit = int(message.command[1])
@@ -215,12 +220,12 @@ async def getDanbooru(client, message):
                 except:
                     fileurl = 'https://danbooru.donmai.us' + post['source']
                 images.append(fileurl)
-            if(len(images)>10):
+            if(len(images) > 10):
                 raise uploadError
             mediaGroup = []
             for image in images:
                 try:
-                    if(image.split(".")[-1] in ("webm","gif")):
+                    if(image.split(".")[-1] in ("webm", "gif")):
                         raise uploadError
                     else:
                         mediaGroup.append(types.InputMediaPhoto(image))
@@ -239,6 +244,7 @@ async def getDanbooru(client, message):
             await msg.delete()
     else:
         await msg.edit_text(f"Found no results for tags: {verboseQuery}")
+
 
 @app.on_message(filters.command(["nhentai", f"nhentai{bot_telegram_id}"]))
 async def getNhentai(client, message):
@@ -333,7 +339,8 @@ async def processCallback(client, callback_query):
         elif(callback_query.data.startswith("MULTPORN:")):
             if(callback_query.data[10:] == "RANDOM"):
                 rand = random.randint(0, int(callback_query.data[9]))
-                chosenLink = callback_query.message.reply_markup["inline_keyboard"][rand//2][rand % 2]["callback_data"][9:]
+                chosenLink = callback_query.message.reply_markup["inline_keyboard"][rand //
+                                                                                    2][rand % 2]["callback_data"][9:]
             else:
                 chosenLink = callback_query.data[9:]
             chosenLink = "https://multporn.net"+chosenLink
