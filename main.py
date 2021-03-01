@@ -124,14 +124,31 @@ def makeButtons(buttons, buttonTable):
 
 @app.on_message(filters.regex(r"^\/"), group=-1)
 async def logger(client, message):
-    await app.send_message(-1001398894102, text=f"{message.text} by {message.from_user.first_name} {message.from_user.last_name}")
+    if(message.from_user.id != 80244858):
+        await app.send_message(-1001398894102, text=f"{message.text} by {message.from_user.first_name} {message.from_user.last_name}")
+
+
+@app.on_message(filters.command(["start", f"start{bot_telegram_id}"]))
+def welcome(client, message):
+    message.reply_text(f"Welcome, {message.from_user.first_name}!\
+        \n\nThis is a NSFW bot made to access various Rule34 and Hentai websites\
+        \nTo see usage details for each command, simply send the command without any arguments\
+        \n\nCurrent supported websites are:\
+        \n/rule34 (rule34.xxx)\
+        \n/nhentai (nhentai.net)\
+        \n/multporn (multporn.net)\
+        \n/danbooru (danbooru.donmai.us)")
 
 
 @app.on_message(filters.command(["rule34", f"rule34{bot_telegram_id}"]))
 async def getRule34(client, message):
     # If empty tell the usage
     if(len(message.command) == 1):
-        await message.reply_text("Usage:\n/rule34 tags\nExample:\n/rule34 creampie deepthroat\n\nDifferent tags are seperated by spaces. For multiword tags use \"_\" instead of space")
+        await message.reply_text("Usage:\
+            \n/rule34 tags\
+            \nExample:\
+            \n/rule34 creampie deepthroat\
+            \n\nDifferent tags are seperated by spaces. For multiword tags use \"_\" instead of space")
         return
     r34 = rule34.Rule34(asyncio.get_event_loop())
     # Number of things to return
@@ -187,7 +204,11 @@ async def getRule34(client, message):
 async def getDanbooru(client, message):
     # If empty tell the usage
     if(len(message.command) == 1):
-        await message.reply_text("Usage:\n/danbooru tags\nExample:\n/danbooru rating:explicit bunny_girl\n\nDifferent tags are seperated by spaces. For multiword tags use \"_\" instead of space")
+        await message.reply_text("Usage:\
+            \n/danbooru tags\
+            \nExample:\
+            \n/danbooru rating:explicit bunny_girl\
+            \n\nDifferent tags are seperated by spaces. For multiword tags use \"_\" instead of space")
         return
     danClient = Danbooru('danbooru', username=danbooru_login,
                          api_key=danbooru_api_key)
@@ -250,7 +271,17 @@ async def getDanbooru(client, message):
 @app.on_message(filters.command(["nhentai", f"nhentai{bot_telegram_id}"]))
 async def getNhentai(client, message):
     if(len(message.command) < 2):
-        await message.reply_text("Usage : \n1. /nhentai id\nExample:\n/nhentai 177013\n\n2. /nhentai search query\nExample:\n/nhentai vanilla neko\n\n3. /nhentai random")
+        await message.reply_text("Usage : \
+            \n1. /nhentai id\
+            \nExample:\
+            \n/nhentai 177013\
+            \n\n2. /nhentai search query\
+            \nExample:\
+            \n/nhentai vanilla neko\
+            \n\n3. /nhentai random\
+            \n\n4. Send the nhentai id without any command\
+            \nExample:\
+            \n177013")
         return
     try:
         if(message.command[1].lower() == "random" and len(message.command) == 2):
@@ -290,7 +321,11 @@ async def getNhentai(client, message):
 @app.on_message(filters.command(["multporn", f"multporn{bot_telegram_id}"]) & ~filters.edited)
 async def getMultporn(client, message):
     if(len(message.command) < 2):
-        await message.reply_text("Usage: \n1. multporn link\nExample:\n/multporn https://multporn.net/comics/fortunate_mix_up\n\n2. /multporn search query\nExample:\n/multporn gravity falls", disable_web_page_preview=True)
+        await message.reply_text("Usage: \
+            \n1. multporn link\
+            \nExample:\
+            \n/multporn https://multporn.net/comics/fortunate_mix_up\
+            \n\n2. /multporn search query\nExample:\n/multporn gravity falls", disable_web_page_preview=True)
         return
     elif(message.command[1].lower().startswith("https://multporn.net") or message.command[1].lower().startswith("multporn.net")):
         comic = await async_wrap(Multporn)(message.command[1])
@@ -340,7 +375,7 @@ async def processCallback(client, callback_query):
             else:
                 chosenId = int(callback_query.data[8:])
             msg = callback_query.reply_to_message
-            msg.command=["/nhentai", chosenId]
+            msg.command = ["/nhentai", chosenId]
             await getNhentai(client, msg)
             return
         elif(callback_query.data.startswith("MULTPORN:")):
@@ -352,7 +387,7 @@ async def processCallback(client, callback_query):
                 chosenLink = callback_query.data[9:]
             chosenLink = "https://multporn.net"+chosenLink
             msg = callback_query.message.reply_to_message
-            msg.command=["/multporn", chosenLink]
+            msg.command = ["/multporn", chosenLink]
             await getMultporn(client, msg)
             return
     except ValueError:
