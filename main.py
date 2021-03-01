@@ -2,7 +2,8 @@ import asyncio
 import random
 import urllib
 from functools import partial, wraps
-from os import environ, path
+from os import environ, listdir
+from pathlib import Path
 from urllib.parse import urlparse
 
 import dotenv
@@ -298,12 +299,9 @@ async def getMultporn(client, message):
             try:
                 await message.reply_video(comic.contentUrls[0])
             except:
-                headers = {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
-                req = urllib.request.Request(
-                    url=comic.contentUrls[0], headers=headers)
-                with await async_wrap(urllib.request.urlopen)(req) as f:
-                    await message.reply_video(f.content)
+                await msg.edit_text(msg.text+"\nUploading manually")
+                await async_wrap(comic.downloadContent)(root=Path("."), printProgress=False)
+                await message.reply_video(Path(comic.sanitizedName,listdir(comic.sanitizedName)[0]))
             await msg.delete()
             return
         else:
