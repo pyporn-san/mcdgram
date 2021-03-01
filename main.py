@@ -306,7 +306,7 @@ async def getNhentai(client, message):
         except:
             raise notFound
     except notFound:
-        await message.reply_text(f"No such hentai with that query")
+        await message.reply_text(f"Found no items with that query")
         return
     # For debugging
     except Exception as er:
@@ -327,8 +327,12 @@ async def getMultporn(client, message):
             \n/multporn https://multporn.net/comics/fortunate_mix_up\
             \n\n2. /multporn search query\nExample:\n/multporn gravity falls", disable_web_page_preview=True)
         return
-    elif(message.command[1].lower().startswith("https://multporn.net") or message.command[1].lower().startswith("multporn.net")):
-        comic = await async_wrap(Multporn)(message.command[1])
+    elif(message.command[1].lower().startswith("https://multporn.net")):
+        try:
+            comic = await async_wrap(Multporn)(message.command[1])
+        except:
+            await message.reply_text("Invalid url")
+            return
         if(comic.contentType == "video"):
             msg = await message.reply_text(f"video: [{comic.name}]({comic.url})")
             try:
@@ -351,7 +355,8 @@ async def getMultporn(client, message):
             comic.name, callback_data=f"MULTPORN:{comic.url.split('multporn.net')[-1]}") for comic in comicList]
         Buttons = makeButtons(k, [2, 2, 2])
         if(len(Buttons) == 0):
-            raise notFound
+            await message.reply_text("Found no items with that query")
+            return
         Buttons.append([types.InlineKeyboardButton(
             f"Random{emoji.GAME_DIE}", callback_data=f"MULTPORN:{min(6, len(comicList))}RANDOM")])
         await message.reply_text("Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
