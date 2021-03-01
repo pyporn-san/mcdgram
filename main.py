@@ -122,7 +122,7 @@ def makeButtons(buttons, buttonTable):
         return Table
 
 
-@app.on_message(filters.regex("^\/"), group=-1)
+@app.on_message(filters.regex(r"^\/"), group=-1)
 async def logger(client, message):
     await app.send_message(-1001398894102, text=f"{message.text} by {message.from_user.first_name} {message.from_user.last_name}")
 
@@ -295,7 +295,7 @@ async def getMultporn(client, message):
     elif(message.command[1].lower().startswith("https://multporn.net") or message.command[1].lower().startswith("multporn.net")):
         comic = await async_wrap(Multporn)(message.command[1])
         if(comic.contentType == "video"):
-            msg = await message.reply_text(f"video: {comic.name}")
+            msg = await message.reply_text(f"video: [{comic.name}]({comic.url})")
             try:
                 await message.reply_video(comic.contentUrls[0])
             except:
@@ -303,19 +303,15 @@ async def getMultporn(client, message):
                 fpath = await async_wrap(comic.downloadContent)(root=Path(f"{message.message_id}{random.randint(1,10)}"), printProgress=False)
                 await message.reply_video(fpath[0])
                 fpath[0].unlink()
-            await msg.delete()
-            return
         else:
-            msg = await message.reply_text(f"{comic.name}\n\nPages: {len(comic.contentUrls)}")
+            msg = await message.reply_text(f"[{comic.name}]({comic.url})\n\nPages: {len(comic.contentUrls)}")
             link = await sendComic(comic.contentUrls, comic.name, handler=comic._Multporn__handler)
             await message.reply_text(parseComic(comic.name, link, len(comic.contentUrls), tags=comic.tags, ongoing=comic.ongoing))
-            await msg.delete()
-            return
+        await msg.delete()
+        return
     else:
         comicList = await async_wrap(MPUtils.Search)(" ".join(message.command[1:]))
-        comicList = comicList[:6]
-        comicList = list(map(Multporn, comicList))
-        print(comicList)
+        comicList = list(map(Multporn, comicList[:6]))
         k = [types.InlineKeyboardButton(
             comic.name, callback_data=f"MULTPORN:{comic.url.split('multporn.net')[-1]}") for comic in comicList]
         Buttons = makeButtons(k, [2, 2, 2])
@@ -343,12 +339,9 @@ async def processCallback(client, callback_query):
                     callback_query.message.reply_markup["inline_keyboard"][rand//2][rand % 2]["callback_data"][8:])
             else:
                 chosenId = int(callback_query.data[8:])
-            msg = await callback_query.message.edit_text(f"Chosen: {chosenId}")
-            doujin = Hentai(chosenId)
-            msg = await msg.edit_text(f"chosen {chosenId} : {doujin.title(Format.Pretty)}")
-            link = await sendComic(doujin.image_urls, doujin.title(Format.Pretty))
-            tags = [tag.name for tag in doujin.tag]
-            await msg.edit_text(parseComic(doujin.title(Format.Pretty), link, len(doujin.image_urls), tags=tags, ongoing="ongoing" in doujin.title(Format.English).lower()))
+            msg = callback_query.reply_to_message
+            msg.command=["/nhentai", chosenId]
+            await getNhentai(client, msg)
             return
         elif(callback_query.data.startswith("MULTPORN:")):
             if(callback_query.data[10:] == "RANDOM"):
@@ -358,14 +351,12 @@ async def processCallback(client, callback_query):
             else:
                 chosenLink = callback_query.data[9:]
             chosenLink = "https://multporn.net"+chosenLink
-            msg = await callback_query.message.edit_text(f"Chosen: {chosenLink}")
-            comic = Multporn(chosenLink)
-            msg = await msg.edit_text(f"chosen: [{comic.name}]({chosenLink})")
-            link = await sendComic(comic.contentUrls, comic.name)
-            await msg.edit_text(parseComic(comic.name, link, len(comic.contentUrls), tags=comic.tags, ongoing=comic.ongoing))
+            msg = callback_query.message.reply_to_message
+            msg.command=["/multporn", chosenLink]
+            await getMultporn(client, msg)
             return
     except ValueError:
-        await callback_query.message.reply_text("Uuuuuuuuhhhh\nYou shoudnlt've seen this")
+        await callback_query.message.reply_text("Uuuuuuuuhhhh\nYou shouldnt've seen this")
 
 app.start()
 app.send_message(owner_id, "Started")
