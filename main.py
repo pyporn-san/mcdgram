@@ -303,7 +303,7 @@ async def getMultporn(client, message):
                 req = urllib.request.Request(
                     url=comic.contentUrls[0], headers=headers)
                 with await async_wrap(urllib.request.urlopen)(req) as f:
-                    await message.reply_video(f)
+                    await message.reply_video(f.content)
             await msg.delete()
             return
         else:
