@@ -300,8 +300,9 @@ async def getMultporn(client, message):
                 await message.reply_video(comic.contentUrls[0])
             except:
                 await msg.edit_text(msg.text+"\nUploading manually")
-                await async_wrap(comic.downloadContent)(root=Path("."), printProgress=False)
-                await message.reply_video(Path(comic.sanitizedName,listdir(comic.sanitizedName)[0]))
+                fpath = await async_wrap(comic.downloadContent)(root=Path(f"{message.message_id}{random.randint(1,10)}"), printProgress=False)
+                await message.reply_video(fpath[0])
+                fpath[0].unlink()
             await msg.delete()
             return
         else:
