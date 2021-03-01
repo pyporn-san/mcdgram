@@ -377,6 +377,7 @@ async def processCallback(client, callback_query):
             msg = callback_query.reply_to_message
             msg.command = ["/nhentai", chosenId]
             await getNhentai(client, msg)
+            await callback_query.message.delete()
             return
         elif(callback_query.data.startswith("MULTPORN:")):
             if(callback_query.data[10:] == "RANDOM"):
@@ -388,6 +389,7 @@ async def processCallback(client, callback_query):
             chosenLink = "https://multporn.net"+chosenLink
             msg = callback_query.message.reply_to_message
             msg.command = ["/multporn", chosenLink]
+            await callback_query.message.delete()
             await getMultporn(client, msg)
             return
     except ValueError:
