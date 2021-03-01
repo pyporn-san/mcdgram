@@ -313,7 +313,7 @@ async def getMultporn(client, message):
             return
     else:
         comicList = await async_wrap(MPUtils.Search)(" ".join(message.command[1:]))
-        comicList = random.sample(comicList, k=min(6, len(comicList)))
+        comicList = comicList[:6]
         comicList = list(map(Multporn, comicList))
         print(comicList)
         k = [types.InlineKeyboardButton(
