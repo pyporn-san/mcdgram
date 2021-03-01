@@ -1,4 +1,4 @@
-hentai==3.1.5
+hentai==3.2.5
 telegraph==1.4.1
 requests==2.25.1
 urllib3==1.25.11
