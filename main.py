@@ -380,7 +380,7 @@ async def processCallback(client, callback_query):
             else:
                 chosenId = int(callback_query.data[8:])
             msg = callback_query.message.reply_to_message
-            msg.command = ["/nhentai", chosenId]
+            msg.command = ["/nhentai", str(chosenId)]
             await callback_query.message.delete()
             await getNhentai(client, msg)
             return
