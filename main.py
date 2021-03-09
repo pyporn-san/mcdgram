@@ -379,10 +379,10 @@ async def processCallback(client, callback_query):
                     callback_query.message.reply_markup["inline_keyboard"][rand//2][rand % 2]["callback_data"][8:])
             else:
                 chosenId = int(callback_query.data[8:])
-            msg = callback_query.reply_to_message
+            msg = callback_query.message.reply_to_message
             msg.command = ["/nhentai", chosenId]
-            await getNhentai(client, msg)
             await callback_query.message.delete()
+            await getNhentai(client, msg)
             return
         elif(callback_query.data.startswith("MULTPORN:")):
             if(callback_query.data[10:] == "RANDOM"):
