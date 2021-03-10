@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 import dotenv
 import rule34
 from hentai import Format, Hentai, Utils
+from luscious import Luscious
 from multporn import Multporn
 from multporn import Utils as MPUtils
 from pybooru import Danbooru
@@ -26,11 +27,15 @@ telegraph_short_name = environ["TELEGRAPH_SHORT_NAME"]
 bot_telegram_id = environ["BOT_TELEGRAM_ID"]
 danbooru_login = environ["DANBOORU_LOGIN"]
 danbooru_api_key = environ["DANBOORU_API_KEY"]
+luscious_login = environ["LUSCIOUS_LOGIN"]
+luscious_password = environ["LUSCIOUS_PASSWORD"]
 
 app = Client(":memory:", api_id, api_hash, bot_token=bot_token)
 telegraph = Telegraph()
 telegraph.create_account(author_name=telegraph_name,
                          author_url=telegraph_url, short_name=telegraph_short_name)
+
+Lus = Luscious(luscious_login, luscious_password)
 
 
 class notFound(Exception):
@@ -363,6 +368,58 @@ async def getMultporn(client, message):
         return
 
 
+@app.on_message(filters.command(["luscious", f"luscious{bot_telegram_id}"]))
+async def getLuscious(client, message):
+    if(len(message.command) < 2):
+        await message.reply_text("Usage: \
+            \n1. luscious link\
+            \nExample:\
+            \n/luscious https://members.luscious.net/albums/mavis-dracula_387509/\
+            \n\n2. luscious id\
+            \n/luscious 387509\
+            \n\n3. /luscious search query\
+            \nExample:\
+            \n/luscious gravity falls", disable_web_page_preview=True)
+        return
+    try:
+        if(message.command[1].lower() == "random" and len(message.command) == 2):
+            pass
+            albumInput = Lus.getRandomId()
+        elif(message.command[1].isnumeric() and len(message.command) == 2):
+            albumInput = int(message.command[1])
+        elif(message.command[1].lower().startswith("https://www.luscious.net") or message.command[1].lower().startswith("https://www.members.luscious.net")):
+            albumInput = message.command[1]
+        else:
+            albumList = await async_wrap(Lus.search)(" ".join(message.command[1:]), returnAlbum=True)
+            albumList = random.sample(
+                albumList["items"], k=min(6, len(albumList)))
+            k = [types.InlineKeyboardButton(
+                album.name, callback_data=f"LUSCIOUS:{album.id}") for album in albumList]
+            Buttons = makeButtons(k, [2, 2, 2])
+            if(len(Buttons) == 0):
+                raise notFound
+            Buttons.append([types.InlineKeyboardButton(
+                f"Random{emoji.GAME_DIE}", callback_data=f"LUSCIOUS:{min(6, len(albumList))}RANDOM")])
+            await message.reply_text("Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
+            return
+        try:
+            album = await async_wrap(Lus.getAlbum)(albumInput)
+            msg = await message.reply_text(f"{album.name}\n\nPages: {len(album.contentUrls)}")
+        except:
+            raise notFound
+    except notFound:
+        await message.reply_text(f"Found no items with that query")
+        return
+    # For debugging
+    except Exception as er:
+        print(f"{er} IN Luscious {message.command}")
+        return
+    # When everything is done send the douhjin
+    link = await sendComic(album.contentUrls, album.name)
+    tags = [tag.name for tag in album.tags if not tag.category]
+    await msg.edit_text(parseComic(album.name, link, len(album.contentUrls), tags=tags, characters=album.characters, artists=album.artists, contentType=album.contentType, ongoing=album.ongoing, isManga=album.isManga))
+
+
 @app.on_message(filters.private & filters.regex("^[0-9]*$") & ~filters.edited)
 async def nhentaiNoCommand(client, message):
     message.command = ["/nhentai", message.matches[0].string]
@@ -396,6 +453,18 @@ async def processCallback(client, callback_query):
             msg.command = ["/multporn", chosenLink]
             await callback_query.message.delete()
             await getMultporn(client, msg)
+            return
+        elif(callback_query.data.startswith("LUSCIOUS:")):
+            if(callback_query.data[10:] == "RANDOM"):
+                rand = random.randint(0, int(callback_query.data[9]))
+                chosenId = int(
+                    callback_query.message.reply_markup["inline_keyboard"][rand//2][rand % 2]["callback_data"][8:])
+            else:
+                chosenId = int(callback_query.data[9:])
+            msg = callback_query.message.reply_to_message
+            msg.command = ["/luscious", str(chosenId)]
+            await callback_query.message.delete()
+            await getLuscious(client, msg)
             return
     except ValueError:
         await callback_query.message.reply_text("Uuuuuuuuhhhh\nYou shouldnt've seen this")
