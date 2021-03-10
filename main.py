@@ -323,7 +323,7 @@ async def getNhentai(client, message):
     await msg.edit_text(parseComic(doujin.title(Format.Pretty), link, len(doujin.image_urls), tags=tags, ongoing="ongoing" in doujin.title(Format.English).lower()))
 
 
-@app.on_message(filters.command(["multporn", f"multporn{bot_telegram_id}"]) & ~filters.edited)
+@app.on_message(filters.command(["multporn", f"multporn{bot_telegram_id}"]))
 async def getMultporn(client, message):
     if(len(message.command) < 2):
         await message.reply_text("Usage: \
