@@ -98,16 +98,30 @@ async def sendComic(links, name, handler=None):
     return f'https://telegra.ph/{response["path"]}'
 
 
-def parseComic(title, link, pages, tags=None, ongoing=None):
+def parseComic(title, link, pages, tags=None, characters=None, artists=None, contentType=None, ongoing=None, isManga=None):
     post = f'[{title}]({link})\n\n'
-    if(ongoing != None):
+    if(ongoing != None and isManga):
         post += f'Status: {"Ongoing" if ongoing else "Completed"}\n\n'
     if(tags):
         post += 'Tags:\n'
         for tag in tags:
-            post += f'#{tag.capitalize().replace(" ","_").replace("-","_")} '
+            post += f'#{tag.title().replace(" ","_").replace("-","_")} '
         post = post.strip()
         post += '\n\n'
+    if(characters):
+        post += 'Characters: '
+        for character in characters:
+            post += f'#{character.title().replace(" ","_").replace("-","_")} '
+        post = post.strip()
+        post += '\n\n'
+    if(artists):
+        post += 'Artists: '
+        for artist in artists:
+            post += f'#{artist.title().replace(" ","_").replace("-","_")} '
+        post = post.strip()
+        post += '\n\n'
+    if(contentType):
+        post += f'Content Type: #{contentType}\n\n'
     post += f'Pages: {pages}'
     return post
 
