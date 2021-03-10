@@ -10,3 +10,4 @@ python-dotenv==0.15.0
 TgCrypto==1.2.2
 Multporn==1.2.3
 pybooru==4.2.2
+luscious==0.0.4
