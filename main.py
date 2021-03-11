@@ -156,7 +156,8 @@ def welcome(client, message):
         \n/rule34 (rule34.xxx)\
         \n/nhentai (nhentai.net)\
         \n/multporn (multporn.net)\
-        \n/danbooru (danbooru.donmai.us)")
+        \n/danbooru (danbooru.donmai.us)\
+        \n/luscious (luscious.net)")
 
 
 @app.on_message(filters.command(["rule34", f"rule34{bot_telegram_id}"]))
