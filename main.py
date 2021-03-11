@@ -397,10 +397,12 @@ async def getNhentai(client, message):
 async def getMultporn(client, message):
     if(len(message.command) < 2):
         await message.reply_text("Usage: \
-            \n1. multporn link\
+            \n1. /multporn link\
             \nExample:\
             \n/multporn https://multporn.net/comics/fortunate_mix_up\
-            \n\n2. /multporn search query\nExample:\n/multporn gravity falls", disable_web_page_preview=True)
+            \n\n2. /multporn search query\
+            \nExample:\
+            \n/multporn gravity falls", disable_web_page_preview=True)
         return
     elif(message.command[1].lower().startswith("https://multporn.net")):
         try:
@@ -450,14 +452,16 @@ async def getMultporn(client, message):
 async def getLuscious(client, message):
     if(len(message.command) < 2):
         await message.reply_text("Usage: \
-            \n1. luscious link\
+            \n1. /luscious link\
             \nExample:\
             \n/luscious https://members.luscious.net/albums/mavis-dracula_387509/\
-            \n\n2. luscious id\
-            \n/luscious 387509\
-            \n\n3. /luscious search query\
+            \n\n2. /luscious id\
             \nExample:\
-            \n/luscious gravity falls", disable_web_page_preview=True)
+            \n/luscious 387509\
+            \n\n3. /lusvious search query\
+            \nExample:\
+            \n/luscious gravity falls\
+            \n\n4. /luscious random", disable_web_page_preview=True)
         return
     try:
         if(message.command[1].lower() == "random" and len(message.command) == 2):
