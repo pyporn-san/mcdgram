@@ -404,11 +404,12 @@ async def getLuscious(client, message):
         elif(message.command[1].lower().startswith("https://www.luscious.net") or message.command[1].lower().startswith("https://www.members.luscious.net")):
             albumInput = message.command[1]
         else:
-            albumList = await async_wrap(Lus.search)(" ".join(message.command[1:]), returnAlbum=True)
+            albumList = await async_wrap(Lus.search)(" ".join(message.command[1:]))
             albumList = random.sample(
-                albumList["items"], k=min(6, len(albumList)))
+                albumList["items"], k=min(6, len(albumList["items"])))
+            albumList = [Lus.getAlbum(i) for i in albumList]
             k = [types.InlineKeyboardButton(
-                album.name, callback_data=f"LUSCIOUS:{album.id}") for album in albumList]
+                album.name, callback_data=f"LUSCIOUS:{album._Album__id}") for album in albumList]
             Buttons = makeButtons(k, [2, 2, 2])
             if(len(Buttons) == 0):
                 raise notFound
