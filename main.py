@@ -2,7 +2,7 @@ import asyncio
 import random
 import urllib
 from functools import partial, wraps
-from os import environ, listdir
+from os import environ, listdir, unlink
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -12,6 +12,7 @@ from hentai import Format, Hentai, Utils
 from luscious import Luscious
 from multporn import Multporn
 from multporn import Utils as MPUtils
+from PIL import Image
 from pybooru import Danbooru
 from pyrogram import Client, emoji, filters, idle, types
 from telegraph import Telegraph, upload
@@ -36,6 +37,7 @@ telegraph.create_account(author_name=telegraph_name,
                          author_url=telegraph_url, short_name=telegraph_short_name)
 
 Lus = Luscious(luscious_login, luscious_password)
+width, height = 225, 300
 
 
 class notFound(Exception):
@@ -139,6 +141,55 @@ def makeButtons(buttons, buttonTable):
         if(Table[-1] == []):
             Table.pop()
         return Table
+
+
+async def downloadImages(links):
+    tasks = [asyncio.create_task(downloadImage(link)) for link in links]
+    files = await asyncio.gather(*tasks)
+    return files
+
+
+async def downloadImage(link):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
+    req = urllib.request.Request(url=link, headers=headers)
+    f = await async_wrap(urllib.request.urlopen)(req)
+    return f
+
+
+async def makeCollage(twidth, theight, listOfImages, name):
+    cols, rows = (2, 3)
+    listOfImages = await downloadImages(listOfImages)
+    width, height = twidth*cols, theight*rows
+    ew, eh = round(twidth/20),  round(theight/40)
+    new_im = Image.new('RGB', (width, height))
+    ims = []
+    for p in listOfImages:
+        im = Image.open(p)
+        im = crop_maintain_ratio(im, twidth, theight)
+        ims.append(im)
+    x = y = 0
+    for row in range(rows):
+        for col in range(cols):
+            new_im.paste(ims[row*cols+col], (x, y))
+            x += twidth+ew
+        y += theight + eh
+        x = 0
+
+    new_im.save(name, quality=95)
+
+
+def crop_maintain_ratio(img, w, h):
+    OW, OH = img.size
+    if(OW/OH > w/h):
+        NW = OH*w/h
+        img = img.crop(((OW-NW)//2, 0, (OW+NW)//2, OH))
+    else:
+        NH = OW*h/w
+        img = img.crop((0, (OH-NH)//2, OW, (OH+NH)//2))
+    img.thumbnail([w, h])
+    img = img.resize([w,h])
+    return img
 
 
 @app.on_message(filters.regex(r"^\/"), group=-1)
@@ -318,7 +369,11 @@ async def getNhentai(client, message):
                 raise notFound
             Buttons.append([types.InlineKeyboardButton(
                 f"Random{emoji.GAME_DIE}", callback_data=f"NHENTAI:{min(6, len(hentaiList))}RANDOM")])
-            await message.reply_text("Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
+            listOfImages = [hentai.thumbnail for hentai in hentaiList]
+            name = f"{message.from_user.id}{message.command}{message.message_id}{random.randint(1, 10)}.jpg"
+            await makeCollage(width, height, listOfImages, name)
+            await message.reply_photo(name, caption="Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
+            unlink(name)
             return
         try:
             doujin = await async_wrap(Hentai)(hentaiId)
@@ -370,16 +425,24 @@ async def getMultporn(client, message):
         return
     else:
         comicList = await async_wrap(MPUtils.Search)(" ".join(message.command[1:]))
-        comicList = list(map(Multporn, comicList[:6]))
+        comicList = comicList[:6]
         k = [types.InlineKeyboardButton(
-            comic.name, callback_data=f"MULTPORN:{comic.url.split('multporn.net')[-1]}") for comic in comicList]
+            comic["name"], callback_data=f"MULTPORN:{comic['link'].split('multporn.net')[-1]}") for comic in comicList]
         Buttons = makeButtons(k, [2, 2, 2])
         if(len(Buttons) == 0):
             await message.reply_text("Found no items with that query")
             return
         Buttons.append([types.InlineKeyboardButton(
             f"Random{emoji.GAME_DIE}", callback_data=f"MULTPORN:{min(6, len(comicList))}RANDOM")])
-        await message.reply_text("Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
+        try:
+            listOfImages = [comic["thumb"] for comic in comicList]
+            name = f"{message.from_user.id}{message.command}{message.message_id}{random.randint(1, 10)}.jpg"
+            await makeCollage(width, height, listOfImages, name)
+            await message.reply_photo(name, caption="Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
+            unlink(name)
+        except Exception as e:
+            print(e)
+            await message.reply_text("Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
         return
 
 
@@ -398,7 +461,6 @@ async def getLuscious(client, message):
         return
     try:
         if(message.command[1].lower() == "random" and len(message.command) == 2):
-            pass
             albumInput = Lus.getRandomId()
         elif(message.command[1].isnumeric() and len(message.command) == 2):
             albumInput = int(message.command[1])
@@ -416,7 +478,11 @@ async def getLuscious(client, message):
                 raise notFound
             Buttons.append([types.InlineKeyboardButton(
                 f"Random{emoji.GAME_DIE}", callback_data=f"LUSCIOUS:{min(6, len(albumList))}RANDOM")])
-            await message.reply_text("Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
+            listOfImages = [album.thumbnail for album in albumList]
+            name = f"{message.from_user.id}{message.command}{message.message_id}{random.randint(1, 10)}.jpg"
+            await makeCollage(width, height, listOfImages, name)
+            await message.reply_photo(name, caption="Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
+            unlink(name)
             return
         try:
             album = await async_wrap(Lus.getAlbum)(albumInput)
