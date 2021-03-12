@@ -454,15 +454,18 @@ async def getMultporn(client, message):
 async def getLuscious(client, message):
     if(len(message.command) < 2):
         await message.reply_text("Usage: \
-            \n1. /luscious link\
-            \nExample:\
+            \n1. /luscious (video) link\
+            \nExamples:\
             \n/luscious https://members.luscious.net/albums/mavis-dracula_387509/\
-            \n\n2. /luscious id\
-            \nExample:\
+            \n/luscious video https://members.luscious.net/videos/dropout-01_6653/\
+            \n\n2. /luscious (video) id\
+            \nExamples:\
             \n/luscious 387509\
-            \n\n3. /lusvious search query\
-            \nExample:\
+            \n/luscious video 6653\
+            \n\n3. /lusvious (video) search query\
+            \nExamples:\
             \n/luscious gravity falls\
+            \n/luscious video dropout\
             \n\n4. /luscious random", disable_web_page_preview=True)
         return
     try:
