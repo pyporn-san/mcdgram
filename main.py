@@ -469,33 +469,48 @@ async def getLuscious(client, message):
             \n\n4. /luscious random", disable_web_page_preview=True)
         return
     try:
-        if(message.command[1].lower() == "random" and len(message.command) == 2):
-            albumInput = Lus.getRandomId()
-        elif(message.command[1].isnumeric() and len(message.command) == 2):
-            albumInput = int(message.command[1])
-        elif(message.command[1].lower().startswith("https://www.luscious.net") or message.command[1].lower().startswith("https://www.members.luscious.net")):
-            albumInput = message.command[1]
+
+        isVideo = message.command[1].lower() == "video"
+        if(message.command[1].lower() == "random" and len(message.command) == 2+isVideo):
+            lusInput = Lus.getRandomId()
+        elif(message.command[1+isVideo].isnumeric() and len(message.command) == 2+isVideo):
+            lusInput = int(message.command[1+isVideo])
+        elif(message.command[1+isVideo].lower().startswith("https://www.luscious.net") or message.command[1+isVideo].lower().startswith("https://www.members.luscious.net")):
+            lusInput = message.command[1+isVideo]
         else:
-            albumList = await async_wrap(Lus.search)(" ".join(message.command[1:]))
-            albumList = random.sample(
-                albumList["items"], k=min(6, len(albumList["items"])))
-            albumList = [Lus.getAlbum(i) for i in albumList]
+            if(isVideo):
+                resultList = await async_wrap(Lus.searchVideo)(" ".join(message.command[2:]))
+                resultList = random.sample(
+                    resultList["items"], k=min(6, len(resultList["items"])))
+                resultList = [Lus.getVideo(i) for i in resultList]
+                width, height = 400, 225
+            else:
+                resultList = await async_wrap(Lus.searchAlbum)(" ".join(message.command[1:]))
+                resultList = random.sample(
+                    resultList["items"], k=min(6, len(resultList["items"])))
+                resultList = [Lus.getAlbum(i) for i in resultList]
+                width, height = 225, 300
+
             k = [types.InlineKeyboardButton(
-                album.name, callback_data=f"LUSCIOUS:{album._Album__id}") for album in albumList]
+                result.name, callback_data=f"LUS{'VID' if isVideo else''}:{result.json['id']}") for result in resultList]
             Buttons = makeButtons(k, [2, 2, 2])
             if(len(Buttons) == 0):
                 raise notFound
             Buttons.append([types.InlineKeyboardButton(
-                f"Random{emoji.GAME_DIE}", callback_data=f"LUSCIOUS:{min(6, len(albumList))}RANDOM")])
-            listOfImages = [album.thumbnail for album in albumList]
+                f"Random{emoji.GAME_DIE}", callback_data=f"LUS{'VID' if isVideo else''}:{min(6, len(resultList))}RANDOM")])
+            listOfImages = [result.thumbnail for result in resultList]
             name = f"{message.from_user.id}{message.command}{message.message_id}{random.randint(1, 10)}.jpg"
             await makeCollage(width, height, listOfImages, name)
             await message.reply_photo(name, caption="Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
             unlink(name)
             return
         try:
-            album = await async_wrap(Lus.getAlbum)(albumInput)
-            msg = await message.reply_text(f"{album.name}\n\nPages: {len(album.contentUrls)}")
+            if(isVideo):
+                result = await async_wrap(Lus.getVideo)(lusInput)
+                msg = await message.reply_text(f"video: [{result.name}]({result.url})")
+            else:
+                result = await async_wrap(Lus.getAlbum)(lusInput)
+                msg = await message.reply_text(f"{result.name}\n\nPages: {len(result.contentUrls)}")
         except:
             raise notFound
     except notFound:
@@ -505,11 +520,23 @@ async def getLuscious(client, message):
     except Exception as er:
         print(f"{er} IN Luscious {message.command}")
         return
-    # When everything is done send the douhjin
-    link = await sendComic(album.contentUrls, album.name)
-    tags = [tag.name for tag in album.tags if not tag.category]
-    await msg.edit_text(parseComic(album.name, link, len(album.contentUrls), tags=tags, characters=album.characters, artists=album.artists, contentType=album.contentType, ongoing=album.ongoing, isManga=album.isManga))
+    # When everything is done send the results
+    if(isVideo):
+        try:
+            await message.reply_video(result.contentUrls[0])
+        except:
+            await msg.edit_text(msg.text+"\n\nUploading manually")
+            for i in result.contentUrls:
+                if(i):
+                    f = await downloadImage(i)
+                    await message.reply_video(f)
+                    break
 
+    else:
+        link = await sendComic(result.contentUrls, result.name)
+        tags = [tag.name for tag in result.tags if not tag.category]
+        await message.reply_text(parseComic(result.name, link, len(result.contentUrls), tags=tags, characters=result.characters, artists=result.artists, contentType=result.contentType, ongoing=result.ongoing, isManga=result.isManga))
+    msg.delete()
 
 @app.on_message(filters.private & filters.regex("^[0-9]*$") & ~filters.edited)
 async def nhentaiNoCommand(client, message):
@@ -545,15 +572,27 @@ async def processCallback(client, callback_query):
             await callback_query.message.delete()
             await getMultporn(client, msg)
             return
-        elif(callback_query.data.startswith("LUSCIOUS:")):
-            if(callback_query.data[10:] == "RANDOM"):
-                rand = random.randint(0, int(callback_query.data[9]))
+        elif(callback_query.data.startswith("LUS:")):
+            if(callback_query.data[5:] == "RANDOM"):
+                rand = random.randint(0, int(callback_query.data[4]))
                 chosenId = int(
                     callback_query.message.reply_markup["inline_keyboard"][rand//2][rand % 2]["callback_data"][8:])
             else:
-                chosenId = int(callback_query.data[9:])
+                chosenId = int(callback_query.data[4:])
             msg = callback_query.message.reply_to_message
             msg.command = ["/luscious", str(chosenId)]
+            await callback_query.message.delete()
+            await getLuscious(client, msg)
+            return
+        elif(callback_query.data.startswith("LUSVID:")):
+            if(callback_query.data[8:] == "RANDOM"):
+                rand = random.randint(0, int(callback_query.data[7]))
+                chosenId = int(
+                    callback_query.message.reply_markup["inline_keyboard"][rand//2][rand % 2]["callback_data"][8:])
+            else:
+                chosenId = int(callback_query.data[7:])
+            msg = callback_query.message.reply_to_message
+            msg.command = ["/luscious", "video", str(chosenId)]
             await callback_query.message.delete()
             await getLuscious(client, msg)
             return
