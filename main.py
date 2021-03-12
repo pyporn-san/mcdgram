@@ -158,10 +158,10 @@ async def downloadImage(link):
 
 
 async def makeCollage(twidth, theight, listOfImages, name):
-    cols, rows = (2, 3)
+    cols, rows = (2, (len(listOfImages)+1)//2)
     listOfImages = await downloadImages(listOfImages)
-    width, height = twidth*cols, theight*rows
     ew, eh = round(twidth/20),  round(theight/40)
+    width, height = twidth*cols+(cols-1)*ew, theight*rows+(rows-1)*eh
     new_im = Image.new('RGB', (width, height))
     ims = []
     for p in listOfImages:
@@ -169,13 +169,15 @@ async def makeCollage(twidth, theight, listOfImages, name):
         im = crop_maintain_ratio(im, twidth, theight)
         ims.append(im)
     x = y = 0
-    for row in range(rows):
-        for col in range(cols):
-            new_im.paste(ims[row*cols+col], (x, y))
-            x += twidth+ew
-        y += theight + eh
-        x = 0
-
+    try:
+        for row in range(rows):
+            for col in range(cols):
+                new_im.paste(ims[row*cols+col], (x, y))
+                x += twidth+ew
+            y += theight + eh
+            x = 0
+    except:
+        pass
     new_im.save(name, quality=95)
 
 
@@ -188,7 +190,7 @@ def crop_maintain_ratio(img, w, h):
         NH = OW*h/w
         img = img.crop((0, (OH-NH)//2, OW, (OH+NH)//2))
     img.thumbnail([w, h])
-    img = img.resize([w,h])
+    img = img.resize([w, h])
     return img
 
 
