@@ -536,7 +536,7 @@ async def getLuscious(client, message):
         link = await sendComic(result.contentUrls, result.name)
         tags = [tag.name for tag in result.tags if not tag.category]
         await message.reply_text(parseComic(result.name, link, len(result.contentUrls), tags=tags, characters=result.characters, artists=result.artists, contentType=result.contentType, ongoing=result.ongoing, isManga=result.isManga))
-    msg.delete()
+    await msg.delete()
 
 @app.on_message(filters.private & filters.regex("^[0-9]*$") & ~filters.edited)
 async def nhentaiNoCommand(client, message):
