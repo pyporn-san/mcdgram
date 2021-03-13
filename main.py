@@ -1,12 +1,14 @@
 import asyncio
 import random
-import urllib
+import urllib.request
 from functools import partial, wraps
+from io import BytesIO
 from os import environ, listdir, unlink
 from pathlib import Path
 from urllib.parse import urlparse
 
 import dotenv
+import requests
 import rule34
 from hentai import Format, Hentai, Utils
 from luscious import Luscious
@@ -528,8 +530,9 @@ async def getLuscious(client, message):
             await msg.edit_text(msg.text+"\n\nUploading manually")
             for i in result.contentUrls:
                 if(i):
-                    f = await downloadImage(i)
-                    await message.reply_video(f.read())
+                    b = BytesIO(requests.get(i).content)
+                    b.name = "TEMP.mp4"
+                    await message.reply_video(b)
                     break
 
     else:
@@ -537,6 +540,7 @@ async def getLuscious(client, message):
         tags = [tag.name for tag in result.tags if not tag.category]
         await message.reply_text(parseComic(result.name, link, len(result.contentUrls), tags=tags, characters=result.characters, artists=result.artists, contentType=result.contentType, ongoing=result.ongoing, isManga=result.isManga))
     await msg.delete()
+
 
 @app.on_message(filters.private & filters.regex("^[0-9]*$") & ~filters.edited)
 async def nhentaiNoCommand(client, message):
@@ -596,8 +600,9 @@ async def processCallback(client, callback_query):
             await callback_query.message.delete()
             await getLuscious(client, msg)
             return
-    except ValueError:
-        await callback_query.message.reply_text("Uuuuuuuuhhhh\nYou shouldnt've seen this")
+    except Exception as e:
+        print(e)
+        # await callback_query.message.reply_text("Uuuuuuuuhhhh\nYou shouldnt've seen this")
 
 app.start()
 app.send_message(owner_id, "Started")
