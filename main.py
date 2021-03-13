@@ -529,7 +529,7 @@ async def getLuscious(client, message):
             for i in result.contentUrls:
                 if(i):
                     f = await downloadImage(i)
-                    await message.reply_video(f)
+                    await message.reply_video(f.content)
                     break
 
     else:
