@@ -16,6 +16,7 @@ from multporn import Multporn
 from multporn import Utils as MPUtils
 from PIL import Image
 from pybooru import Danbooru
+from pygelbooru import Gelbooru
 from pyrogram import Client, emoji, filters, idle, types
 from telegraph import Telegraph, upload
 
@@ -30,6 +31,8 @@ telegraph_short_name = environ["TELEGRAPH_SHORT_NAME"]
 bot_telegram_id = environ["BOT_TELEGRAM_ID"]
 danbooru_login = environ["DANBOORU_LOGIN"]
 danbooru_api_key = environ["DANBOORU_API_KEY"]
+gelbooru_id = environ["GELBOORU_ID"]
+gelbooru_api_key = environ["GELBOORU_API_KEY"]
 luscious_login = environ["LUSCIOUS_LOGIN"]
 luscious_password = environ["LUSCIOUS_PASSWORD"]
 
@@ -208,10 +211,11 @@ def welcome(client, message):
         \n\nThis is a NSFW bot made to access various Rule34 and Hentai websites\
         \nTo see usage details for each command, simply send the command without any arguments\
         \n\nCurrent supported websites are:\
+        \n/danbooru (danbooru.donmai.us)\
+        \n/gelbooru (gelbooru.com)\
         \n/rule34 (rule34.xxx)\
         \n/nhentai (nhentai.net)\
         \n/multporn (multporn.net)\
-        \n/danbooru (danbooru.donmai.us)\
         \n/luscious (luscious.net)")
 
 
@@ -317,6 +321,67 @@ async def getDanbooru(client, message):
                 except:
                     fileurl = 'https://danbooru.donmai.us' + post['source']
                 images.append(fileurl)
+            if(len(images) > 10):
+                raise uploadError
+            mediaGroup = []
+            for image in images:
+                try:
+                    if(image.split(".")[-1] in ("webm", "gif")):
+                        raise uploadError
+                    else:
+                        mediaGroup.append(types.InputMediaPhoto(image))
+                except:
+                    raise uploadError
+            if(mediaGroup):
+                try:
+                    await message.reply_media_group(mediaGroup)
+                    await msg.delete()
+                except:
+                    raise uploadError
+        except uploadError:
+            await msg.edit_text(msg.text+f"\nUploading to Telegraph")
+            link = await sendComic(images, verboseQuery)
+            await message.reply_text(parseComic(verboseQuery, link, len(images)))
+            await msg.delete()
+    else:
+        await msg.edit_text(f"Found no results for tags: {verboseQuery}")
+
+
+@app.on_message(filters.command(["gelbooru", f"gelbooru{bot_telegram_id}"]))
+async def getGelbooru(client, message):
+    # If empty tell the usage
+    if(len(message.command) == 1):
+        await message.reply_text("Usage:\
+            \n/gelbooru tags\
+            \nExample:\
+            \n/gelbooru rating:explicit bunny_girl\
+            \n\nDifferent tags are seperated by spaces. For multiword tags use \"_\" instead of space")
+        return
+    gelClient = Gelbooru(gelbooru_api_key, gelbooru_id)
+    # Number of things to return
+    if(message.command[1].isnumeric()):
+        limit = int(message.command[1])
+        firstIsNumber = True
+    else:
+        limit = 1
+        firstIsNumber = False
+    # Tell the user of success
+    query = " ".join(message.command[1+firstIsNumber:])
+    verboseQuery = query.replace(" ", ", ").replace("_", " ")
+    msg = await message.reply_text(f"Searching for {limit} result{'s' if limit>1 else ''} with tags: {verboseQuery}")
+    try:
+        posts = (await gelClient.search_posts(tags=query.split(" ")))
+        if(len(posts) >= limit):
+            msg = await msg.edit_text(f"Found {limit} result{'s' if limit>1 else ''}. Sending")
+        else:
+            msg = await msg.edit_text(f"Found only {len(posts)} result{'s' if len(posts)>1 else ''}. Sending")
+        mediaGroup = []
+    except (KeyError, TypeError):
+        posts = []
+    if(posts):
+        try:
+            posts = random.sample(posts, k=min(len(posts), limit))
+            images = [str(post) for post in posts]
             if(len(images) > 10):
                 raise uploadError
             mediaGroup = []
