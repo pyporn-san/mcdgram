@@ -670,6 +670,32 @@ async def processCallback(client, callback_query):
         print(e)
         # await callback_query.message.reply_text("Uuuuuuuuhhhh\nYou shouldnt've seen this")
 
+
+@app.on_inline_query()
+async def answerInline(client, inline_query):
+    ratings = {"s": "Safe", "q": "Questionable", "e": "Explicit"}
+    searchQuery = " ".join(inline_query.query.split(" ")[1:])
+    offset = int(inline_query.offset) if inline_query.offset else 0
+
+    print(offset, searchQuery)
+    if(offset):
+        return
+    if(inline_query.query.startswith("gel")):
+        images = (await gelClient.search_posts(tags=searchQuery.split(" "), exclude_tags=["video", "animated", "webm"], page=offset//2))
+        images = images[:50] if not offset % 2 else images[50:]
+        await inline_query.answer([types.InlineQueryResultPhoto(str(image), reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image.rating], url=f"https://gelbooru.com/index.php?page=post&s=view&id={image.id}")]])) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
+    if(inline_query.query.startswith("dan")):  # post_list(tags=query, random=True, limit=200)
+        images = (await async_wrap(danClient.post_list)(tags=searchQuery, page=offset//2))
+        images = images[:50] if not offset % 2 else images[50:]
+        images = [image for image in images if "file_url" in image.keys()]
+        await inline_query.answer([types.InlineQueryResultPhoto(image["file_url"], reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image["rating"]], url=f"https://danbooru.donmai.us/posts/{image['id']}")]])) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
+    if(inline_query.query.startswith("rul")):
+        if(searchQuery):
+            images = await r34Client.getImages(searchQuery+" -video -webm -animated", singlePage=True,  OverridePID=offset//2)
+            images = images[:50] if not offset % 2 else images[50:]
+            await inline_query.answer([types.InlineQueryResultPhoto(image.file_url, reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image.rating], url=f"https://rule34.xxx/index.php?page=post&s=view&id={image.id}")]])) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
+        else:
+            await inline_query.answer([])
 app.start()
 app.send_message(owner_id, "Started")
 print("Started")
