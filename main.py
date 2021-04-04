@@ -42,6 +42,11 @@ telegraph.create_account(author_name=telegraph_name,
                          author_url=telegraph_url, short_name=telegraph_short_name)
 
 Lus = Luscious(luscious_login, luscious_password)
+gelClient = Gelbooru(gelbooru_api_key, gelbooru_id)
+danClient = Danbooru('danbooru', username=danbooru_login,
+                     api_key=danbooru_api_key)
+r34Client = rule34.Rule34(asyncio.get_event_loop())
+
 width, height = 225, 300
 
 
@@ -229,7 +234,6 @@ async def getRule34(client, message):
             \n/rule34 creampie deepthroat\
             \n\nDifferent tags are seperated by spaces. For multiword tags use \"_\" instead of space")
         return
-    r34 = rule34.Rule34(asyncio.get_event_loop())
     # Number of things to return
     if(message.command[1].isnumeric()):
         limit = int(message.command[1])
@@ -242,7 +246,7 @@ async def getRule34(client, message):
     verboseQuery = query.replace(" ", ", ").replace("_", " ")
     msg = await message.reply_text(f"Searching for {limit} result{'s' if limit>1 else ''} with tags: {verboseQuery}")
     try:
-        images = await r34.getImages(query)
+        images = await r34Client.getImages(query)
         if(len(images) >= limit):
             msg = await msg.edit_text(f"Found {limit} result{'s' if limit>1 else ''}. Sending")
         else:
@@ -289,8 +293,6 @@ async def getDanbooru(client, message):
             \n/danbooru rating:explicit bunny_girl\
             \n\nDifferent tags are seperated by spaces. For multiword tags use \"_\" instead of space")
         return
-    danClient = Danbooru('danbooru', username=danbooru_login,
-                         api_key=danbooru_api_key)
     # Number of things to return
     if(message.command[1].isnumeric()):
         limit = int(message.command[1])
@@ -357,7 +359,6 @@ async def getGelbooru(client, message):
             \n/gelbooru rating:explicit bunny_girl\
             \n\nDifferent tags are seperated by spaces. For multiword tags use \"_\" instead of space")
         return
-    gelClient = Gelbooru(gelbooru_api_key, gelbooru_id)
     # Number of things to return
     if(message.command[1].isnumeric()):
         limit = int(message.command[1])
