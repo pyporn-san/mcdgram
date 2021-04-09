@@ -175,7 +175,7 @@ async def makeCollage(twidth, theight, listOfImages, name):
     try:
         for row in range(rows):
             for col in range(cols):
-                if(len(ims)%2==1 and row*cols+col==len(ims)-1):
+                if(len(ims) % 2 == 1 and row*cols+col == len(ims)-1):
                     new_im.paste(ims[row*cols+col], (x+twidth//2, y))
                 else:
                     new_im.paste(ims[row*cols+col], (x, y))
