@@ -126,9 +126,13 @@ async def sendVideo(videoUrl, name, url, message):
 
 async def sendComic(comicPages, title, url, tags=None, characters=None, artists=None, contentType=None, ongoing=None, isManga=None, handler=None, message=None):
     msg = await message.reply_text(f"[{title}]({url})\n\nPages: {len(comicPages)}")
-    link = await comicToTelegraph(comicPages, title, handler=handler)
-    await message.reply_text(parseComic(title, link, len(comicPages), tags=tags, characters=characters, artists=artists, contentType=contentType, ongoing=ongoing, isManga=isManga))
+    await message.reply_text(await prepareComicText(comicPages, title, tags=tags, characters=characters, artists=artists, contentType=contentType, ongoing=ongoing, isManga=isManga, handler=handler))
     await msg.delete()
+
+
+async def prepareComicText(comicPages, title, tags=None, characters=None, artists=None, contentType=None, ongoing=None, isManga=None, handler=None):
+    link = await comicToTelegraph(comicPages, title, handler=handler)
+    return parseComic(title, link, len(comicPages), tags=tags, characters=characters, artists=artists, contentType=contentType, ongoing=ongoing, isManga=isManga)
 
 
 def makeButtons(buttons, buttonTable):
