@@ -622,24 +622,39 @@ async def answerInline(client, inline_query):
     offset = int(inline_query.offset) if inline_query.offset else 0
 
     print(offset, searchQuery)
-    if(offset):
-        return
-    if(inline_query.query.startswith("gel")):
+    if(inline_query.query.startswith("gel") and searchQuery):
         images = (await gelClient.search_posts(tags=searchQuery.split(" "), exclude_tags=["video", "animated", "webm"], page=offset//2))
         images = images[:50] if not offset % 2 else images[50:]
         await inline_query.answer([types.InlineQueryResultPhoto(str(image), reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image.rating], url=f"https://gelbooru.com/index.php?page=post&s=view&id={image.id}")]])) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
-    if(inline_query.query.startswith("dan")):  # post_list(tags=query, random=True, limit=200)
+    if(inline_query.query.startswith("dan") and searchQuery):
         images = (await async_wrap(danClient.post_list)(tags=searchQuery, page=offset//2))
         images = images[:50] if not offset % 2 else images[50:]
         images = [image for image in images if "file_url" in image.keys()]
         await inline_query.answer([types.InlineQueryResultPhoto(image["file_url"], reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image["rating"]], url=f"https://danbooru.donmai.us/posts/{image['id']}")]])) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
-    if(inline_query.query.startswith("rul")):
+    if(inline_query.query.startswith("rul") and searchQuery):
         if(searchQuery):
             images = await r34Client.getImages(searchQuery+" -video -webm -animated", singlePage=True,  OverridePID=offset//2)
             images = images[:50] if not offset % 2 else images[50:]
             await inline_query.answer([types.InlineQueryResultPhoto(image.file_url, reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image.rating], url=f"https://rule34.xxx/index.php?page=post&s=view&id={image.id}")]])) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
         else:
             await inline_query.answer([])
+
+    if(inline_query.query.startswith("nhe") and searchQuery):
+        hentaiList = await sources.searchNhentai(searchQuery)
+        hentaiList = hentaiList[:5]
+        await inline_query.answer([types.InlineQueryResultArticle(title=h.title(Format.Pretty),
+                                                                  input_message_content=types.InputTextMessageContent(await prepareComicText(h.image_urls, h.title(Format.Pretty), tags=[tag.name for tag in h.tag], ongoing="ongoing" in h.title(Format.Pretty).lower(), isManga=True)),
+                                                                  thumb_url=h.thumbnail)
+                                   for h in hentaiList], cache_time=15)
+    if(inline_query.query.startswith("lus") and searchQuery):
+        hentaiList = (await sources.searchLuscious(searchQuery, False, Lus))["items"]
+        hentaiList = hentaiList[:5]
+        hentaiList = [Lus.getAlbum(i) for i in hentaiList]
+        await inline_query.answer([types.InlineQueryResultArticle(title=result.name,
+                                                                  input_message_content=types.InputTextMessageContent(await prepareComicText(result.contentUrls, result.name, tags=[tag.name for tag in result.tags if not tag.category], characters=result.characters, artists=result.artists, contentType=result.contentType, ongoing=result.ongoing, isManga=result.isManga, handler=result.handler)),
+                                                                  thumb_url=result.thumbnail)
+                                   for result in hentaiList], cache_time=15)
+
     else:
         await inline_query.answer([types.InlineQueryResultArticle(title="Click here for help", thumb_url=logo_url,
                                                                   input_message_content=types.InputTextMessageContent(f"The format for inline use is\
