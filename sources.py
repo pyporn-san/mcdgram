@@ -40,9 +40,9 @@ async def prepareNhentai(query):
     return doujin
 
 
-async def searchNhentai(query):
+async def searchNhentai(query, page=1):
     try:
-        hentaiList = await async_wrap(Utils.search_by_query)(query)
+        hentaiList = await async_wrap(Utils.search_by_query)(query, page=page)
         assert(len(hentaiList) > 0)
         return hentaiList
     except:
@@ -54,9 +54,9 @@ async def prepareMultporn(query):
     return comic
 
 
-async def searchMultporn(query):
+async def searchMultporn(query, page=1):
     try:
-        comicList = await async_wrap(MPUtils.Search)(query)
+        comicList = await async_wrap(MPUtils.Search)(query, page=page)
         assert(len(comicList) > 0)
         return comicList
     except:
@@ -87,12 +87,13 @@ async def prepareLusciousVideo(query, Lus):
     return result
 
 
-async def searchLuscious(query, isVideo, Lus):
-    if(isVideo):
-        resultList = await async_wrap(Lus.searchVideo)(" ".join(query.split(" ")[1:]))
-    else:
-        resultList = await async_wrap(Lus.searchAlbum)(query)
-    if(resultList):
-        return resultList
-    else:
+async def searchLuscious(query, isVideo, Lus, page=1):
+    try:
+        if(isVideo):
+            comicList = await async_wrap(Lus.searchVideo)(" ".join(query.split(" ")[1:]))
+        else:
+            comicList = await async_wrap(Lus.searchAlbum)(query)
+        assert(len(comicList) > 0)
+        return comicList
+    except:
         raise NotFound
