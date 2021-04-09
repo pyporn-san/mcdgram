@@ -456,47 +456,36 @@ async def getMultporn(client, message):
             \nExample:\
             \n/multporn gravity falls", disable_web_page_preview=True)
         return
-    elif(message.command[1].lower().startswith("https://multporn.net")):
-        try:
-            comic = await async_wrap(Multporn)(message.command[1])
-        except:
-            await message.reply_text("Invalid url")
-            return
-        if(comic.contentType == "video"):
-            msg = await message.reply_text(f"video: [{comic.name}]({comic.url})")
-            try:
-                await message.reply_video(comic.contentUrls[0])
-            except:
-                await msg.edit_text(msg.text+"\n\nUploading manually")
-                fpath = await async_wrap(comic.downloadContent)(root=Path(f"{message.message_id}{random.randint(1,10)}"), printProgress=False)
-                await message.reply_video(fpath[0])
-                fpath[0].unlink()
+    try:
+        if(message.command[1].lower().startswith("https://multporn.net")):
+            comic = await sources.prepareMultporn(message.command[1])
+            if(comic.contentType == "video"):
+                await sendVideo(comic.contentUrls[0], comic.name, comic.url, message)
+            else:
+                await sendComic(comic.contentUrls, comic.name, comic.url, comic.tags, ongoing=comic.ongoing, isManga=True, handler=comic.handler, message=message)
         else:
-            msg = await message.reply_text(f"[{comic.name}]({comic.url})\n\nPages: {len(comic.contentUrls)}")
-            link = await sendComic(comic.contentUrls, comic.name, handler=comic._Multporn__handler)
-            await message.reply_text(parseComic(comic.name, link, len(comic.contentUrls), tags=comic.tags, ongoing=comic.ongoing))
-        await msg.delete()
-        return
-    else:
-        comicList = await async_wrap(MPUtils.Search)(" ".join(message.command[1:]))
-        comicList = comicList[:6]
-        k = [types.InlineKeyboardButton(
-            comic["name"], callback_data=f"MULTPORN:{comic['link'].split('multporn.net')[-1]}") for comic in comicList]
-        Buttons = makeButtons(k, [2, 2, 2])
-        if(len(Buttons) == 0):
-            await message.reply_text("Found no items with that query")
+            comicList = await sources.searchMultporn(" ".join(message.command[1:]))
+            comicList = comicList[:6]
+            k = [types.InlineKeyboardButton(
+                comic["name"], callback_data=f"MULTPORN:{comic['link'].split('multporn.net')[-1]}") for comic in comicList]
+            Buttons = makeButtons(k, [2, 2, 2])
+            Buttons.append([types.InlineKeyboardButton(
+                f"Random{emoji.GAME_DIE}", callback_data=f"MULTPORN:{min(6, len(comicList))}RANDOM")])
+            try:
+                listOfImages = [comic["thumb"] for comic in comicList]
+                name = f"{message.from_user.id}{message.command}{message.message_id}{random.randint(1, 10)}.jpg"
+                await makeCollage(width, height, listOfImages, name)
+                await message.reply_photo(name, caption="Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
+                unlink(name)
+            except Exception as e:
+                print(e)
+                await message.reply_text("Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
             return
-        Buttons.append([types.InlineKeyboardButton(
-            f"Random{emoji.GAME_DIE}", callback_data=f"MULTPORN:{min(6, len(comicList))}RANDOM")])
-        try:
-            listOfImages = [comic["thumb"] for comic in comicList]
-            name = f"{message.from_user.id}{message.command}{message.message_id}{random.randint(1, 10)}.jpg"
-            await makeCollage(width, height, listOfImages, name)
-            await message.reply_photo(name, caption="Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
-            unlink(name)
-        except Exception as e:
-            print(e)
-            await message.reply_text("Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
+    except NotFound:
+        await message.reply_text(f"Found no items with that query")
+        return
+    except Exception as er:
+        print(f"{er} IN MULTPORN {message.command}")
         return
 
 

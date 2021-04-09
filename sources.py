@@ -48,3 +48,17 @@ async def searchNhentai(query):
     except:
         raise NotFound
 
+
+async def prepareMultporn(query):
+    comic = await async_wrap(Multporn)(query)
+    return comic
+
+
+async def searchMultporn(query):
+    try:
+        comicList = await async_wrap(MPUtils.Search)(query)
+        assert(len(comicList) > 0)
+        return comicList
+    except:
+        raise NotFound
+
