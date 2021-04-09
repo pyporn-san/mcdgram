@@ -50,11 +50,11 @@ r34Client = rule34.Rule34(asyncio.get_event_loop())
 width, height = 225, 300
 
 
-class notFound(Exception):
+class NotFound(Exception):
     pass
 
 
-class uploadError(Exception):
+class UploadError(Exception):
     pass
 
 
