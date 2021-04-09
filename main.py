@@ -74,8 +74,8 @@ def async_wrap(func):
 
 
 async def comicToTelegraph(links, name, handler=None):
-    # Uploading files to telegra.ph
-    print(name, len(links))
+    links = links[:500]
+
     # Generating html for the post
     html = ''.join([f'<img src="{image}">' for image in links])
     # Sending html to telegraph
