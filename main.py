@@ -37,6 +37,7 @@ gelbooru_id = environ["GELBOORU_ID"]
 gelbooru_api_key = environ["GELBOORU_API_KEY"]
 luscious_login = environ["LUSCIOUS_LOGIN"]
 luscious_password = environ["LUSCIOUS_PASSWORD"]
+logo_url = environ["LOGO_URL"]
 
 app = Client(":memory:", api_id, api_hash, bot_token=bot_token)
 telegraph = Telegraph()
@@ -635,6 +636,20 @@ async def answerInline(client, inline_query):
             await inline_query.answer([types.InlineQueryResultPhoto(image.file_url, reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image.rating], url=f"https://rule34.xxx/index.php?page=post&s=view&id={image.id}")]])) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
         else:
             await inline_query.answer([])
+    else:
+        await inline_query.answer([types.InlineQueryResultArticle(title="Click here for help", thumb_url=logo_url,
+                                                                  input_message_content=types.InputTextMessageContent(f"The format for inline use is\
+                                                                                                                     {bot_telegram_id} `source` query\
+                                                                                                                     options for source are:\
+                                                                                                                     gel - for gelbooru.com\
+                                                                                                                     dan - for danbooru.donmai.us (limited to only 2 tags)\
+                                                                                                                     rul - for rule34.xxx\n\
+                                                                                                                     nhe - for nhentai.net\
+                                                                                                                     lus - for luscious.net\n\
+                                                                                                                     The first three are image boards and the query must be in the format of tags\
+                                                                                                                     tags are seperated by space and any space in the tags is replaced with '_'")
+                                                                  )])
+
 app.start()
 app.send_message(owner_id, "Started")
 print("Started")
