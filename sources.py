@@ -62,3 +62,37 @@ async def searchMultporn(query):
     except:
         raise NotFound
 
+
+async def prepareLuscious(query, Lus):
+    if(query == "random"):
+        lusInput = Lus.getRandomId()
+    elif(query.isnumeric()):
+        lusInput = int(query)
+    elif(query.lower().startswith("https://www.luscious.net") or query.lower().startswith("https://www.members.luscious.net")):
+        lusInput = query
+    result = await async_wrap(Lus.getAlbum)(lusInput)
+    return result
+
+
+async def prepareLusciousVideo(query, Lus):
+    if(query == "random"):
+        # lusInput = Lus.getRandomId()
+        # TODO
+        raise NotFound
+    elif(query.isnumeric()):
+        lusInput = int(query)
+    elif(query.lower().startswith("https://www.luscious.net") or query.lower().startswith("https://www.members.luscious.net")):
+        lusInput = query
+    result = await async_wrap(Lus.getVideo)(lusInput)
+    return result
+
+
+async def searchLuscious(query, isVideo, Lus):
+    if(isVideo):
+        resultList = await async_wrap(Lus.searchVideo)(" ".join(query.split(" ")[1:]))
+    else:
+        resultList = await async_wrap(Lus.searchAlbum)(query)
+    if(resultList):
+        return resultList
+    else:
+        raise NotFound

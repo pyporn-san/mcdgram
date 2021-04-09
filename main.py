@@ -508,33 +508,26 @@ async def getLuscious(client, message):
             \n\n4. /luscious random", disable_web_page_preview=True)
         return
     try:
-
         isVideo = message.command[1].lower() == "video"
-        if(message.command[1].lower() == "random" and len(message.command) == 2+isVideo):
-            lusInput = Lus.getRandomId()
-        elif(message.command[1+isVideo].isnumeric() and len(message.command) == 2+isVideo):
-            lusInput = int(message.command[1+isVideo])
-        elif(message.command[1+isVideo].lower().startswith("https://www.luscious.net") or message.command[1+isVideo].lower().startswith("https://www.members.luscious.net")):
-            lusInput = message.command[1+isVideo]
-        else:
+        if(message.command[1+isVideo].isnumeric() or message.command[1+isVideo].lower().startswith("https://") or message.command[1+isVideo] == "random"):
             if(isVideo):
-                resultList = await async_wrap(Lus.searchVideo)(" ".join(message.command[2:]))
-                resultList = random.sample(
-                    resultList["items"], k=min(6, len(resultList["items"])))
-                resultList = [Lus.getVideo(i) for i in resultList]
-                width, height = 400, 225
+                result = await sources.prepareLusciousVideo(message.command[2], Lus)
+                videoLink = [s for s in result.contentUrls if s][0]
+                await sendVideo(videoLink, result.name, result.url, message)
             else:
-                resultList = await async_wrap(Lus.searchAlbum)(" ".join(message.command[1:]))
-                resultList = random.sample(
-                    resultList["items"], k=min(6, len(resultList["items"])))
-                resultList = [Lus.getAlbum(i) for i in resultList]
-                width, height = 225, 300
+                result = await sources.prepareLuscious(message.command[1], Lus)
+                await sendComic(result.contentUrls, result.name, result.url, tags=[tag.name for tag in result.tags if not tag.category], characters=result.characters, artists=result.artists, contentType=result.contentType, ongoing=result.ongoing, isManga=result.isManga, handler=result.handler, message=message)
+        else:
+            resultList = await sources.searchLuscious(" ".join(message.command[1:]), isVideo, Lus)
+            resultList = random.sample(
+                resultList["items"], k=min(6, len(resultList["items"])))
+            resultList = [Lus.getVideo(
+                i) if isVideo else Lus.getAlbum(i) for i in resultList]
+            (width, height) = (400, 225) if isVideo else (225, 300)
 
             k = [types.InlineKeyboardButton(
                 result.name, callback_data=f"LUS{'VID' if isVideo else''}:{result.json['id']}") for result in resultList]
             Buttons = makeButtons(k, [2, 2, 2])
-            if(len(Buttons) == 0):
-                raise notFound
             Buttons.append([types.InlineKeyboardButton(
                 f"Random{emoji.GAME_DIE}", callback_data=f"LUS{'VID' if isVideo else''}:{min(6, len(resultList))}RANDOM")])
             listOfImages = [result.thumbnail for result in resultList]
@@ -543,40 +536,12 @@ async def getLuscious(client, message):
             await message.reply_photo(name, caption="Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
             unlink(name)
             return
-        try:
-            if(isVideo):
-                result = await async_wrap(Lus.getVideo)(lusInput)
-                msg = await message.reply_text(f"video: [{result.name}]({result.url})")
-            else:
-                result = await async_wrap(Lus.getAlbum)(lusInput)
-                msg = await message.reply_text(f"{result.name}\n\nPages: {len(result.contentUrls)}")
-        except:
-            raise notFound
-    except notFound:
+    except NotFound:
         await message.reply_text(f"Found no items with that query")
         return
-    # For debugging
     except Exception as er:
         print(f"{er} IN Luscious {message.command}")
         return
-    # When everything is done send the results
-    if(isVideo):
-        try:
-            await message.reply_video(result.contentUrls[0])
-        except:
-            await msg.edit_text(msg.text+"\n\nUploading manually")
-            for i in result.contentUrls:
-                if(i):
-                    b = BytesIO(requests.get(i).content)
-                    b.name = "TEMP.mp4"
-                    await message.reply_video(b)
-                    break
-
-    else:
-        link = await sendComic(result.contentUrls, result.name)
-        tags = [tag.name for tag in result.tags if not tag.category]
-        await message.reply_text(parseComic(result.name, link, len(result.contentUrls), tags=tags, characters=result.characters, artists=result.artists, contentType=result.contentType, ongoing=result.ongoing, isManga=result.isManga))
-    await msg.delete()
 
 
 @app.on_message(filters.private & filters.regex("^[0-9]*$") & ~filters.edited)
