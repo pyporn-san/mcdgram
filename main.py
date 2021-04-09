@@ -88,14 +88,7 @@ async def uploadImage(img, handler=None):
         print(f"{er} on {img}")
         return img
 
-
-async def uplaodToTelegraph(links, handler=None):
-    tasks = [asyncio.create_task(uploadImage(link, handler)) for link in links]
-    uploaded = await asyncio.gather(*tasks)
-    return uploaded
-
-
-async def sendComic(links, name, handler=None):
+async def comicToTelegraph(links, name, handler=None):
     # Uploading files to telegra.ph
     print(name, len(links))
     try:
@@ -156,12 +149,12 @@ def makeButtons(buttons, buttonTable):
 
 
 async def downloadImages(links):
-    tasks = [asyncio.create_task(downloadImage(link)) for link in links]
+    tasks = [asyncio.create_task(downloadFile(link)) for link in links]
     files = await asyncio.gather(*tasks)
     return files
 
 
-async def downloadImage(link):
+async def downloadFile(link):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
     req = urllib.request.Request(url=link, headers=headers)
@@ -260,25 +253,25 @@ async def getRule34(client, message):
         try:
             images = random.sample(images, k=min(len(images), limit))
             if(len(images) > 10):
-                raise uploadError
+                raise UploadError
             for image in images:
                 try:
                     if(image.file_url.split(".")[-1] in ("webm", "gif")):
-                        raise uploadError
+                        raise UploadError
                     else:
                         mediaGroup.append(
                             types.InputMediaPhoto(image.file_url))
                 except:
-                    raise uploadError
+                    raise UploadError
             if(mediaGroup):
                 try:
                     await message.reply_media_group(mediaGroup)
                     await msg.delete()
                 except:
-                    raise uploadError
-        except uploadError:
+                    raise UploadError
+        except UploadError:
             await msg.edit_text(msg.text+f"\nUploading to Telegraph")
-            link = await sendComic([rule34.file_url for rule34 in images], verboseQuery)
+            link = await comicToTelegraph([rule34.file_url for rule34 in images], verboseQuery)
             await message.reply_text(parseComic(verboseQuery, link, len(images)))
             await msg.delete()
     else:
@@ -326,25 +319,25 @@ async def getDanbooru(client, message):
                     fileurl = 'https://danbooru.donmai.us' + post['source']
                 images.append(fileurl)
             if(len(images) > 10):
-                raise uploadError
+                raise UploadError
             mediaGroup = []
             for image in images:
                 try:
                     if(image.split(".")[-1] in ("webm", "gif")):
-                        raise uploadError
+                        raise UploadError
                     else:
                         mediaGroup.append(types.InputMediaPhoto(image))
                 except:
-                    raise uploadError
+                    raise UploadError
             if(mediaGroup):
                 try:
                     await message.reply_media_group(mediaGroup)
                     await msg.delete()
                 except:
-                    raise uploadError
-        except uploadError:
+                    raise UploadError
+        except UploadError:
             await msg.edit_text(msg.text+f"\nUploading to Telegraph")
-            link = await sendComic(images, verboseQuery)
+            link = await comicToTelegraph(images, verboseQuery)
             await message.reply_text(parseComic(verboseQuery, link, len(images)))
             await msg.delete()
     else:
@@ -386,25 +379,25 @@ async def getGelbooru(client, message):
             posts = random.sample(posts, k=min(len(posts), limit))
             images = [str(post) for post in posts]
             if(len(images) > 10):
-                raise uploadError
+                raise UploadError
             mediaGroup = []
             for image in images:
                 try:
                     if(image.split(".")[-1] in ("webm", "gif")):
-                        raise uploadError
+                        raise UploadError
                     else:
                         mediaGroup.append(types.InputMediaPhoto(image))
                 except:
-                    raise uploadError
+                    raise UploadError
             if(mediaGroup):
                 try:
                     await message.reply_media_group(mediaGroup)
                     await msg.delete()
                 except:
-                    raise uploadError
-        except uploadError:
+                    raise UploadError
+        except UploadError:
             await msg.edit_text(msg.text+f"\nUploading to Telegraph")
-            link = await sendComic(images, verboseQuery)
+            link = await comicToTelegraph(images, verboseQuery)
             await message.reply_text(parseComic(verboseQuery, link, len(images)))
             await msg.delete()
     else:
