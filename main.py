@@ -69,36 +69,14 @@ def async_wrap(func):
         return await loop.run_in_executor(executor, pfunc)
     return run
 
+# Preparing comics/video
 
-async def uploadImage(img, handler=None):
-    try:
-        if(not handler):
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
-            req = urllib.request.Request(url=img, headers=headers)
-            with await async_wrap(urllib.request.urlopen)(req) as f:
-                result = await async_wrap(upload.upload_file)(f)
-                return result[0]
-        else:
-            file = await async_wrap(handler.get)(img, stream=True)
-            file = file.raw
-            result = await async_wrap(upload.upload_file)(file)
-            return result[0]
-    except Exception as er:
-        print(f"{er} on {img}")
-        return img
 
 async def comicToTelegraph(links, name, handler=None):
     # Uploading files to telegra.ph
     print(name, len(links))
-    try:
-        uploaded = await uplaodToTelegraph(links, handler)
-        print(f"Uploading success for {name}")
-    except Exception as er:
-        print(f"Fallback on {name} becuase {er}")
-        uploaded = links
     # Generating html for the post
-    html = ''.join([f'<img src="{image}">' for image in uploaded])
+    html = ''.join([f'<img src="{image}">' for image in links])
     # Sending html to telegraph
     response = await async_wrap(telegraph.create_page)(
         name, html_content=html, author_name=telegraph_name, author_url=telegraph_url)
@@ -131,6 +109,25 @@ def parseComic(title, link, pages, tags=None, characters=None, artists=None, con
         post += f'Content Type: #{contentType}\n\n'
     post += f'Pages: {pages}'
     return post
+
+
+async def sendVideo(videoUrl, name, url, message):
+    msg = await message.reply_text(f"video: [{name}]({url})")
+    try:
+        await message.reply_video(videoUrl)
+    except:
+        await msg.edit_text(msg.text+"\n\nUploading manually")
+        b = BytesIO(requests.get(videoUrl).content)
+        b.name = name + ".mp4"
+        await message.reply_video(b)
+    await msg.delete()
+
+
+async def sendComic(comicPages, title, url, tags=None, characters=None, artists=None, contentType=None, ongoing=None, isManga=None, handler=None, message=None):
+    msg = await message.reply_text(f"[{title}]({url})\n\nPages: {len(comicPages)}")
+    link = await comicToTelegraph(comicPages, title, handler=handler)
+    await message.reply_text(parseComic(title, link, len(comicPages), tags=tags, characters=characters, artists=artists, contentType=contentType, ongoing=ongoing, isManga=isManga))
+    await msg.delete()
 
 
 def makeButtons(buttons, buttonTable):
