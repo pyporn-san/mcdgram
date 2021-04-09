@@ -202,7 +202,7 @@ def crop_maintain_ratio(img, w, h):
 @app.on_message(filters.regex(r"^\/"), group=-1)
 async def logger(client, message):
     if(message.from_user.id != 80244858):
-        await app.send_message(-1001398894102, text=f"{message.text} by {message.from_user.first_name} {message.from_user.last_name}")
+        await app.send_message(-1001398894102, text=f"{message.from_user.first_name} {message.from_user.last_name if message.from_user.last_name else ''}: {message.text}")
 
 
 @app.on_message(filters.command(["start", f"start{bot_telegram_id}"]))
