@@ -20,6 +20,8 @@ from pygelbooru import Gelbooru
 from pyrogram import Client, emoji, filters, idle, types
 from telegraph import Telegraph, upload
 
+import sources
+
 dotenv.load_dotenv()
 api_id = int(environ["API_ID"])
 api_hash = environ["API_HASH"]
