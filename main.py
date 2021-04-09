@@ -420,18 +420,15 @@ async def getNhentai(client, message):
             \n177013")
         return
     try:
-        if(message.command[1].lower() == "random" and len(message.command) == 2):
-            hentaiId = Utils.get_random_id()
-        elif(message.command[1].isnumeric() and len(message.command) == 2):
-            hentaiId = int(message.command[1])
+        if(len(message.command) == 2 and (message.command[1] == "random" or message.command[1].isnumeric())):
+            doujin = await sources.prepareNhentai(message.command[1])
+            await sendComic(doujin.image_urls, doujin.title(Format.Pretty), doujin.url, tags=[tag.name for tag in doujin.tag], ongoing="ongoing" in doujin.title(Format.Pretty).lower(), isManga=True, message=message)
         else:
-            hentaiList = await async_wrap(Utils.search_by_query)(" ".join(message.command[1:]))
-            hentaiList = random.sample(hentaiList, k=min(6, len(hentaiList)))
+            hentaiList = await sources.searchNhentai(" ".join(message.command[1:]))
+            hentaiList = hentaiList[:6]
             k = [types.InlineKeyboardButton(hentai.title(
                 Format.Pretty), callback_data=f"NHENTAI:{hentai.id}") for hentai in hentaiList]
             Buttons = makeButtons(k, [2, 2, 2])
-            if(len(Buttons) == 0):
-                raise notFound
             Buttons.append([types.InlineKeyboardButton(
                 f"Random{emoji.GAME_DIE}", callback_data=f"NHENTAI:{min(6, len(hentaiList))}RANDOM")])
             listOfImages = [hentai.thumbnail for hentai in hentaiList]
@@ -440,22 +437,12 @@ async def getNhentai(client, message):
             await message.reply_photo(name, caption="Choose one", reply_markup=types.InlineKeyboardMarkup(Buttons), quote=True)
             unlink(name)
             return
-        try:
-            doujin = await async_wrap(Hentai)(hentaiId)
-            msg = await message.reply_text(f"{doujin.title(Format.Pretty)}\n\nPages: {len(doujin.image_urls)}")
-        except:
-            raise notFound
-    except notFound:
+    except NotFound:
         await message.reply_text(f"Found no items with that query")
         return
-    # For debugging
     except Exception as er:
         print(f"{er} IN HENTAI {message.command}")
         return
-    # When everything is done send the douhjin
-    link = await sendComic(doujin.image_urls, doujin.title(Format.Pretty))
-    tags = [tag.name for tag in doujin.tag]
-    await msg.edit_text(parseComic(doujin.title(Format.Pretty), link, len(doujin.image_urls), tags=tags, ongoing="ongoing" in doujin.title(Format.English).lower()))
 
 
 @app.on_message(filters.command(["multporn", f"multporn{bot_telegram_id}"]))
