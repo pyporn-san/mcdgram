@@ -626,25 +626,24 @@ async def answerInline(client, inline_query):
     try:
         if(inline_query.query.startswith("gel") and searchQuery):
             try:
-                images = (await gelClient.search_posts(tags=searchQuery.split(" "), exclude_tags=["video", "webm"], page=offset//2))
+                images = (await gelClient.search_posts(tags=searchQuery.split(" "), page=offset//2))
                 images = images[:50] if not offset % 2 else images[50:]
-                await inline_query.answer([types.InlineQueryResultPhoto(str(image), reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image.rating], url=f"https://gelbooru.com/index.php?page=post&s=view&id={image.id}")]])) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
+                await inline_query.answer([types.InlineQueryResultPhoto(str(image), reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image.rating], url=f"https://gelbooru.com/index.php?page=post&s=view&id={image.id}")]]), input_message_content=types.InputTextMessageContent("Video\nClick on link below to view") if ("video" in image.tags or "webm" in image.tags) else None) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
             except:
                 await inline_query.answer([])
         if(inline_query.query.startswith("dan") and searchQuery):
             try:
-                images = (await async_wrap(danClient.post_list)(tags=searchQuery, page=offset//2))
-                images = images[:50] if not offset % 2 else images[50:]
+                images = (await async_wrap(danClient.post_list)(tags=searchQuery, page=offset*2)) + (await async_wrap(danClient.post_list)(tags=searchQuery, page=offset*2+1))
                 images = [
                     image for image in images if "file_url" in image.keys()]
-                await inline_query.answer([types.InlineQueryResultPhoto(image["file_url"], reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image["rating"]], url=f"https://danbooru.donmai.us/posts/{image['id']}")]])) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
+                await inline_query.answer([types.InlineQueryResultPhoto(image["file_url"], reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image["rating"]], url=f"https://danbooru.donmai.us/posts/{image['id']}")]]), input_message_content=types.InputTextMessageContent("Video\nClick on link below to view") if ("video" in image["tag_string"] or "webm" in image["tag_string"]) else None) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
             except:
                 await inline_query.answer([])
         if(inline_query.query.startswith("rul") and searchQuery):
             try:
-                images = await r34Client.getImages(searchQuery+" -video -webm", singlePage=True,  OverridePID=offset//2)
+                images = await r34Client.getImages(searchQuery, singlePage=True,  OverridePID=offset//2)
                 images = images[:50] if not offset % 2 else images[50:]
-                await inline_query.answer([types.InlineQueryResultPhoto(image.file_url, reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image.rating], url=f"https://rule34.xxx/index.php?page=post&s=view&id={image.id}")]])) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
+                await inline_query.answer([types.InlineQueryResultPhoto(image.file_url, reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image.rating], url=f"https://rule34.xxx/index.php?page=post&s=view&id={image.id}")]]), input_message_content=types.InputTextMessageContent("Video\nClick on link below to view") if ("video" in image.tags or "webm" in image.tags) else None) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
             except:
                 await inline_query.answer([])
 
