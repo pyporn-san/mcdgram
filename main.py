@@ -631,7 +631,7 @@ async def answerInline(client, inline_query):
                 await inline_query.answer([types.InlineQueryResultPhoto(str(image), reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image.rating], url=f"https://gelbooru.com/index.php?page=post&s=view&id={image.id}")]]), input_message_content=types.InputTextMessageContent("Video\nClick on link below to view") if ("video" in image.tags or "webm" in image.tags) else None) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
             except:
                 await inline_query.answer([])
-        if(inline_query.query.startswith("dan") and searchQuery):
+        elif(inline_query.query.startswith("dan") and searchQuery):
             try:
                 images = (await async_wrap(danClient.post_list)(tags=searchQuery, page=offset*2)) + (await async_wrap(danClient.post_list)(tags=searchQuery, page=offset*2+1))
                 images = [
@@ -639,7 +639,7 @@ async def answerInline(client, inline_query):
                 await inline_query.answer([types.InlineQueryResultPhoto(image["file_url"], reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image["rating"]], url=f"https://danbooru.donmai.us/posts/{image['id']}")]]), input_message_content=types.InputTextMessageContent("Video\nClick on link below to view") if ("video" in image["tag_string"] or "webm" in image["tag_string"]) else None) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
             except:
                 await inline_query.answer([])
-        if(inline_query.query.startswith("rul") and searchQuery):
+        elif(inline_query.query.startswith("rul") and searchQuery):
             try:
                 images = await r34Client.getImages(searchQuery, singlePage=True,  OverridePID=offset//2)
                 images = images[:50] if not offset % 2 else images[50:]
@@ -647,14 +647,14 @@ async def answerInline(client, inline_query):
             except:
                 await inline_query.answer([])
 
-        if(inline_query.query.startswith("nhe") and searchQuery):
+        elif(inline_query.query.startswith("nhe") and searchQuery):
             hentaiList = await sources.searchNhentai(searchQuery)
             hentaiList = hentaiList[:5]
             await inline_query.answer([types.InlineQueryResultArticle(title=h.title(Format.Pretty),
                                                                       input_message_content=types.InputTextMessageContent(await prepareComicText(h.image_urls, h.title(Format.Pretty), tags=[tag.name for tag in h.tag], ongoing="ongoing" in h.title(Format.Pretty).lower(), isManga=True)),
                                                                       thumb_url=h.thumbnail)
                                        for h in hentaiList], cache_time=15)
-        if(inline_query.query.startswith("lus") and searchQuery):
+        elif(inline_query.query.startswith("lus") and searchQuery):
             hentaiList = (await sources.searchLuscious(searchQuery, False, Lus))["items"]
             hentaiList = hentaiList[:5]
             hentaiList = [Lus.getAlbum(i) for i in hentaiList]
