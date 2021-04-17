@@ -648,8 +648,11 @@ async def answerInline(client, inline_query):
                 await inline_query.answer([])
 
         elif(inline_query.query.startswith("nhe") and searchQuery):
-            hentaiList = await sources.searchNhentai(searchQuery)
-            hentaiList = hentaiList[:5]
+            if(searchQuery.isnumeric()):
+                hentaiList = [await sources.prepareNhentai(searchQuery)]
+            else:
+                hentaiList = await sources.searchNhentai(searchQuery)
+                hentaiList = hentaiList[:5]
             await inline_query.answer([types.InlineQueryResultArticle(title=h.title(Format.Pretty),
                                                                       input_message_content=types.InputTextMessageContent(await prepareComicText(h.image_urls, h.title(Format.Pretty), tags=[tag.name for tag in h.tag], ongoing="ongoing" in h.title(Format.Pretty).lower(), isManga=True)),
                                                                       thumb_url=h.thumbnail)
