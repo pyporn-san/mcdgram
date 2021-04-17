@@ -616,7 +616,7 @@ async def processCallback(client, callback_query):
 @app.on_inline_query()
 async def answerInline(client, inline_query):
     if(inline_query.from_user.id != 80244858):
-        await app.send_message(-1001398894102, text=f"{inline_query.query} by {inline_query.from_user.first_name} {inline_query.from_user.last_name}")
+        await app.send_message(-1001398894102, text=f"{inline_query.from_user.first_name} {inline_query.from_user.last_name if inline_query .from_user.last_name else ''}: {bot_telegram_id} {' '.join(inline_query.query.split(' ')[1:])}")
 
     ratings = {"s": "Safe", "q": "Questionable", "e": "Explicit"}
     searchQuery = " ".join(inline_query.query.split(" ")[1:])
