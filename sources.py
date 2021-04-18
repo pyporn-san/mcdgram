@@ -25,6 +25,8 @@ def async_wrap(func):
         return await loop.run_in_executor(executor, pfunc)
     return run
 
+# Nhentai
+
 
 async def prepareNhentai(query):
     print(query)
@@ -49,6 +51,9 @@ async def searchNhentai(query, page=1):
         raise NotFound
 
 
+# Multporn
+
+
 async def prepareMultporn(query):
     comic = await async_wrap(Multporn)(query)
     return comic
@@ -61,6 +66,9 @@ async def searchMultporn(query, page=1):
         return comicList
     except:
         raise NotFound
+
+
+# Luscious
 
 
 async def prepareLuscious(query, Lus):
