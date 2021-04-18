@@ -107,19 +107,19 @@ async def searchLuscious(query, isVideo, Lus, page=1):
         raise NotFound
 
 
-def comicArgs(obj):
+def comicArgs(obj, noContent=False):
     if(isinstance(obj, Hentai)):
-        return {"comicPages": obj.image_urls, "title": obj.title(Format.Pretty), "url": obj.url, "tags": [tag.name for tag in obj.tag], "ongoing": "ongoing" in obj.title(Format.Pretty).lower(), "isManga": True, "handler": None}
+        return {"comicPages": [] if noContent else obj.image_urls, "pages": obj.num_pages, "title": obj.title(Format.Pretty), "url": obj.url, "tags": [tag.name for tag in obj.tag], "ongoing": "ongoing" in obj.title(Format.Pretty).lower(), "isManga": True, "handler": None}
     elif(isinstance(obj, Multporn)):
-        return {"comicPages": obj.contentUrls, "title": obj.name, "url": obj.url, "tags": obj.tags, "ongoing": obj.ongoing, "isManga": True, "handler": obj.handler}
+        return {"comicPages": [] if noContent else obj.contentUrls, "pages": obj.pageCount, "title": obj.name, "url": obj.url, "tags": obj.tags, "ongoing": obj.ongoing, "isManga": True, "handler": obj.handler}
     elif(isinstance(obj, Album)):
-        return {"comicPages": obj.contentUrls, "title":  obj.name, "url":  obj.url, "tags": [tag.name for tag in obj.tags if not tag.category], "characters": obj.characters, "artists": obj.artists, "contentType": obj.contentType, "ongoing": obj.ongoing, "isManga": obj.isManga, "handler": obj.handler}
+        return {"comicPages": [] if noContent else obj.contentUrls, "pages": obj.pictureCount + obj.animatedCount, "title":  obj.name, "url":  obj.url, "tags": [tag.name for tag in obj.tags if not tag.category], "characters": obj.characters, "artists": obj.artists, "contentType": obj.contentType, "ongoing": obj.ongoing, "isManga": obj.isManga, "handler": obj.handler}
 
 
-def parseComicArgs(obj):
+def telegraphArgs(obj):
     if(isinstance(obj, Hentai)):
-        return {obj.url, obj.title(Format.Pretty), obj.handler}
+        return {"images": obj.image_urls, "title": obj.title(Format.Pretty), "handler": None}
     elif(isinstance(obj, Multporn)):
-        return {obj.url, obj.title, obj.handler}
+        return {"images": obj.contentUrls, "title": obj.title, "handler": obj.handler}
     elif(isinstance(obj, Album)):
-        return {obj.url, obj.title, obj.handler}
+        return {"images": obj.contentUrls, "title": obj.name, "handler": obj.handler}

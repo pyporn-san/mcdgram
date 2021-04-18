@@ -74,19 +74,23 @@ def async_wrap(func):
 # Preparing comics/video
 
 
-async def comicToTelegraph(links, name, handler=None):
-    links = links[:500]
+async def comicToTelegraph(images, title, handler=None):
+    images = images[:500]
 
     # Generating html for the post
-    html = ''.join([f'<img src="{image}">' for image in links])
+    html = ''.join([f'<img src="{image}">' for image in images])
     # Sending html to telegraph
     response = await async_wrap(telegraph.create_page)(
-        name, html_content=html, author_name=telegraph_name, author_url=telegraph_url)
+        title, html_content=html, author_name=telegraph_name, author_url=telegraph_url)
     return f'https://telegra.ph/{response["path"]}'
 
 
-def parseComic(telegraphUrl=None, title=None, pages=None, tags=None, characters=None, artists=None, contentType=None, ongoing=None, isManga=None):
-    post = f'[{title}]({telegraphUrl})\n\n'
+def parseComic(telegraphUrl=None, title=None, pages=None, tags=None, characters=None, artists=None, contentType=None, ongoing=None, isManga=None, noLink=False):
+    if(noLink):
+        post=f'{title}\n\n'
+    else:
+        post = f'[{title}]({telegraphUrl})\n\n'
+
     if(ongoing != None and isManga):
         post += f'Status: {"Ongoing" if ongoing else "Completed"}\n\n'
     if(tags):
@@ -134,9 +138,9 @@ async def sendComic(obj, message=None):
     await msg.delete()
 
 
-async def prepareComicText(comicPages=None, title=None, tags=None, characters=None, artists=None, contentType=None, ongoing=None, isManga=None, handler=None, **kwargs):
-    telegraphUrl = await comicToTelegraph(comicPages, title, handler=handler)
-    return parseComic(title=title, telegraphUrl=telegraphUrl, pages=len(comicPages), tags=tags, characters=characters, artists=artists, contentType=contentType, ongoing=ongoing, isManga=isManga)
+async def prepareComicText(comicPages=None, pages=None, title=None, tags=None, characters=None, artists=None, contentType=None, ongoing=None, isManga=None, handler=None, noLink=False, **kwargs):
+    telegraphUrl = "" if noLink else await comicToTelegraph(comicPages, title, handler=handler)
+    return parseComic(title=title, telegraphUrl=telegraphUrl, pages=pages, tags=tags, characters=characters, artists=artists, contentType=contentType, ongoing=ongoing, isManga=isManga, noLink=noLink)
 
 
 def makeButtons(buttons, buttonTable):
@@ -657,16 +661,18 @@ async def answerInline(client, inline_query):
                 hentaiList = await sources.searchNhentai(searchQuery)
                 hentaiList = hentaiList[:5]
             await inline_query.answer([types.InlineQueryResultArticle(title=h.title(Format.Pretty),
-                                                                      input_message_content=types.InputTextMessageContent(await prepareComicText(h.image_urls, h.title(Format.Pretty), tags=[tag.name for tag in h.tag], ongoing="ongoing" in h.title(Format.Pretty).lower(), isManga=True)),
-                                                                      thumb_url=h.thumbnail)
+                                                                      input_message_content=types.InputTextMessageContent(await prepareComicText(noLink=True, **sources.comicArgs(h, noContent=True))),
+                                                                      thumb_url=h.thumbnail,
+                                                                      reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton("Instant view", url=await comicToTelegraph(**sources.telegraphArgs(h)))]]))
                                        for h in hentaiList], cache_time=15)
         elif(inline_query.query.startswith("lus") and searchQuery):
             hentaiList = (await sources.searchLuscious(searchQuery, False, Lus))["items"]
-            hentaiList = hentaiList[:5]
+            hentaiList = hentaiList[:2]
             hentaiList = [Lus.getAlbum(i) for i in hentaiList]
             await inline_query.answer([types.InlineQueryResultArticle(title=result.name,
-                                                                      input_message_content=types.InputTextMessageContent(await prepareComicText(result.contentUrls, result.name, tags=[tag.name for tag in result.tags if not tag.category], characters=result.characters, artists=result.artists, contentType=result.contentType, ongoing=result.ongoing, isManga=result.isManga, handler=result.handler)),
-                                                                      thumb_url=result.thumbnail)
+                                                                      input_message_content=types.InputTextMessageContent(await prepareComicText(noLink=True, **sources.comicArgs(result, noContent=True))),
+                                                                      thumb_url=result.thumbnail,
+                                                                      reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton("Instant view", url=await comicToTelegraph(**sources.telegraphArgs(result)))]]))
                                        for result in hentaiList], cache_time=15)
         else:
             await inline_query.answer([types.InlineQueryResultArticle(title="Click here for help", thumb_url=logo_url,
