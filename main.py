@@ -667,7 +667,7 @@ async def answerInline(client, inline_query):
                                        for h in hentaiList], cache_time=15)
         elif(inline_query.query.startswith("lus") and searchQuery):
             hentaiList = (await sources.searchLuscious(searchQuery, False, Lus))["items"]
-            hentaiList = hentaiList[:2]
+            hentaiList = hentaiList[:5]
             hentaiList = [Lus.getAlbum(i) for i in hentaiList]
             await inline_query.answer([types.InlineQueryResultArticle(title=result.name,
                                                                       input_message_content=types.InputTextMessageContent(await prepareComicText(noLink=True, **sources.comicArgs(result, noContent=True))),
