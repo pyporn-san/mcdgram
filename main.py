@@ -85,8 +85,8 @@ async def comicToTelegraph(links, name, handler=None):
     return f'https://telegra.ph/{response["path"]}'
 
 
-def parseComic(title, link, pages, tags=None, characters=None, artists=None, contentType=None, ongoing=None, isManga=None):
-    post = f'[{title}]({link})\n\n'
+def parseComic(telegraphUrl=None, title=None, pages=None, tags=None, characters=None, artists=None, contentType=None, ongoing=None, isManga=None):
+    post = f'[{title}]({telegraphUrl})\n\n'
     if(ongoing != None and isManga):
         post += f'Status: {"Ongoing" if ongoing else "Completed"}\n\n'
     if(tags):
@@ -125,15 +125,18 @@ async def sendVideo(videoUrl, name, url, message):
     await msg.delete()
 
 
-async def sendComic(comicPages, title, url, tags=None, characters=None, artists=None, contentType=None, ongoing=None, isManga=None, handler=None, message=None):
-    msg = await message.reply_text(f"[{title}]({url})\n\nPages: {len(comicPages)}")
-    await message.reply_text(await prepareComicText(comicPages, title, tags=tags, characters=characters, artists=artists, contentType=contentType, ongoing=ongoing, isManga=isManga, handler=handler))
+async def sendComic(obj, message=None):
+    kwargs = sources.comicArgs(obj)
+
+    msg = await message.reply_text(f"[{kwargs['title']}]({kwargs['url']})\n\nPages: {len(kwargs['comicPages'])}")
+    await message.reply_text(await prepareComicText(**kwargs))
+
     await msg.delete()
 
 
-async def prepareComicText(comicPages, title, tags=None, characters=None, artists=None, contentType=None, ongoing=None, isManga=None, handler=None):
-    link = await comicToTelegraph(comicPages, title, handler=handler)
-    return parseComic(title, link, len(comicPages), tags=tags, characters=characters, artists=artists, contentType=contentType, ongoing=ongoing, isManga=isManga)
+async def prepareComicText(comicPages=None, title=None, tags=None, characters=None, artists=None, contentType=None, ongoing=None, isManga=None, handler=None, **kwargs):
+    telegraphUrl = await comicToTelegraph(comicPages, title, handler=handler)
+    return parseComic(title=title, telegraphUrl=telegraphUrl, pages=len(comicPages), tags=tags, characters=characters, artists=artists, contentType=contentType, ongoing=ongoing, isManga=isManga)
 
 
 def makeButtons(buttons, buttonTable):
@@ -428,7 +431,7 @@ async def getNhentai(client, message):
     try:
         if(len(message.command) == 2 and (message.command[1] == "random" or message.command[1].isnumeric())):
             doujin = await sources.prepareNhentai(message.command[1])
-            await sendComic(doujin.image_urls, doujin.title(Format.Pretty), doujin.url, tags=[tag.name for tag in doujin.tag], ongoing="ongoing" in doujin.title(Format.Pretty).lower(), isManga=True, message=message)
+            await sendComic(doujin, message)
         else:
             hentaiList = await sources.searchNhentai(" ".join(message.command[1:]))
             hentaiList = hentaiList[:6]
@@ -468,7 +471,7 @@ async def getMultporn(client, message):
             if(comic.contentType == "video"):
                 await sendVideo(comic.contentUrls[0], comic.name, comic.url, message)
             else:
-                await sendComic(comic.contentUrls, comic.name, comic.url, comic.tags, ongoing=comic.ongoing, isManga=True, handler=comic.handler, message=message)
+                await sendComic(comic, message)
         else:
             comicList = await sources.searchMultporn(" ".join(message.command[1:]))
             comicList = comicList[:6]
@@ -522,7 +525,7 @@ async def getLuscious(client, message):
                 await sendVideo(videoLink, result.name, result.url, message)
             else:
                 result = await sources.prepareLuscious(message.command[1], Lus)
-                await sendComic(result.contentUrls, result.name, result.url, tags=[tag.name for tag in result.tags if not tag.category], characters=result.characters, artists=result.artists, contentType=result.contentType, ongoing=result.ongoing, isManga=result.isManga, handler=result.handler, message=message)
+                await sendComic(result, message)
         else:
             resultList = await sources.searchLuscious(" ".join(message.command[1:]), isVideo, Lus)
             resultList = random.sample(

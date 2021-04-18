@@ -4,7 +4,7 @@ import asyncio
 import requests
 import rule34
 from hentai import Format, Hentai, Utils
-from luscious import Luscious
+from luscious import Luscious, Album
 from multporn import Multporn
 from multporn import Utils as MPUtils
 from PIL import Image
@@ -105,3 +105,21 @@ async def searchLuscious(query, isVideo, Lus, page=1):
         return comicList
     except:
         raise NotFound
+
+
+def comicArgs(obj):
+    if(isinstance(obj, Hentai)):
+        return {"comicPages": obj.image_urls, "title": obj.title(Format.Pretty), "url": obj.url, "tags": [tag.name for tag in obj.tag], "ongoing": "ongoing" in obj.title(Format.Pretty).lower(), "isManga": True, "handler": None}
+    elif(isinstance(obj, Multporn)):
+        return {"comicPages": obj.contentUrls, "title": obj.name, "url": obj.url, "tags": obj.tags, "ongoing": obj.ongoing, "isManga": True, "handler": obj.handler}
+    elif(isinstance(obj, Album)):
+        return {"comicPages": obj.contentUrls, "title":  obj.name, "url":  obj.url, "tags": [tag.name for tag in obj.tags if not tag.category], "characters": obj.characters, "artists": obj.artists, "contentType": obj.contentType, "ongoing": obj.ongoing, "isManga": obj.isManga, "handler": obj.handler}
+
+
+def parseComicArgs(obj):
+    if(isinstance(obj, Hentai)):
+        return {obj.url, obj.title(Format.Pretty), obj.handler}
+    elif(isinstance(obj, Multporn)):
+        return {obj.url, obj.title, obj.handler}
+    elif(isinstance(obj, Album)):
+        return {obj.url, obj.title, obj.handler}
