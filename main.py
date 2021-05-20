@@ -240,7 +240,7 @@ async def getRule34(client, message):
             \n/rule34 tags\
             \nExample:\
             \n/rule34 creampie deepthroat\
-            \n\nDifferent tags are seperated by spaces. For multiword tags use \"_\" instead of space")
+            \n\n**Different tags are seperated by spaces. For multiword tags use \"_\" instead of space**")
         return
     # Number of things to return
     if(message.command[1].isnumeric()):
@@ -299,7 +299,7 @@ async def getDanbooru(client, message):
             \n/danbooru tags\
             \nExample:\
             \n/danbooru rating:explicit bunny_girl\
-            \n\nDifferent tags are seperated by spaces. For multiword tags use \"_\" instead of space")
+            \n\n**Different tags are seperated by spaces. For multiword tags use \"_\" instead of space**")
         return
     # Number of things to return
     if(message.command[1].isnumeric()):
@@ -365,7 +365,7 @@ async def getGelbooru(client, message):
             \n/gelbooru tags\
             \nExample:\
             \n/gelbooru rating:explicit bunny_girl\
-            \n\nDifferent tags are seperated by spaces. For multiword tags use \"_\" instead of space")
+            \n\n**Different tags are seperated by spaces. For multiword tags use \"_\" instead of space**")
         return
     # Number of things to return
     if(message.command[1].isnumeric()):
