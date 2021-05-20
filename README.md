@@ -1,3 +1,3 @@
 # mcdgram
 
-A bot I made as a hobby that's used for porn
+I don't want to write a README.md you can't make me
