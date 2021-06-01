@@ -514,7 +514,7 @@ async def getLuscious(client, message):
             \nExamples:\
             \n/luscious 387509\
             \n/luscious video 6653\
-            \n\n3. /lusvious (video) search query\
+            \n\n3. /luscious (video) search query\
             \nExamples:\
             \n/luscious gravity falls\
             \n/luscious video dropout\
