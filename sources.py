@@ -7,11 +7,6 @@ from hentai import Format, Hentai, Utils
 from luscious import Luscious, Album
 from multporn import Multporn
 from multporn import Utils as MPUtils
-from PIL import Image
-from pybooru import Danbooru
-from pygelbooru import Gelbooru
-
-
 class NotFound(Exception):
     pass
 
