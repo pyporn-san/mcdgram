@@ -617,7 +617,7 @@ async def processCallback(client, callback_query):
             return
     except Exception as e:
         print(e)
-        # await callback_query.message.reply_text("Uuuuuuuuhhhh\nYou shouldnt've seen this")
+        await callback_query.message.reply_text("Something went wrong")
 
 
 @app.on_inline_query()
