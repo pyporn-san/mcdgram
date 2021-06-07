@@ -24,7 +24,6 @@ def async_wrap(func):
 
 
 async def prepareNhentai(query):
-    print(query)
     if(query.lower() == "random"):
         hentaiId = Utils.get_random_id()
     elif(query.isnumeric()):

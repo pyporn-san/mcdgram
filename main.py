@@ -52,6 +52,7 @@ danClient = Danbooru('danbooru', username=danbooru_login,
 r34Client = rule34.Rule34(asyncio.get_event_loop())
 
 width, height = 225, 300
+newUsers = set()
 
 
 class NotFound(Exception):
@@ -87,7 +88,7 @@ async def comicToTelegraph(images, title, handler=None):
 
 def parseComic(telegraphUrl=None, title=None, pages=None, tags=None, characters=None, artists=None, contentType=None, ongoing=None, isManga=None, noLink=False):
     if(noLink):
-        post=f'{title}\n\n'
+        post = f'{title}\n\n'
     else:
         post = f'[{title}]({telegraphUrl})\n\n'
 
@@ -211,9 +212,12 @@ def crop_maintain_ratio(img, w, h):
     img = img.resize([w, h])
     return img
 
+# Start region pyrogram handlers
+
 
 @app.on_message(filters.regex(r"^\/"), group=-1)
 async def logger(client, message):
+    newUsers.add(message.from_user.id)
     if(message.from_user.id != 80244858):
         await app.send_message(-1001398894102, text=f"{message.from_user.first_name} {message.from_user.last_name if message.from_user.last_name else ''}: {message.text}")
 
@@ -622,14 +626,13 @@ async def processCallback(client, callback_query):
 
 @app.on_inline_query()
 async def answerInline(client, inline_query):
+    newUsers.add(inline_query.from_user.id)
     if(inline_query.from_user.id != 80244858):
-        await app.send_message(-1001398894102, text=f"{inline_query.from_user.first_name} {inline_query.from_user.last_name if inline_query .from_user.last_name else ''}: {bot_telegram_id} {' '.join(inline_query.query.split(' ')[1:])}")
+        await app.send_message(-1001398894102, text=f"{inline_query.from_user.first_name} {inline_query.from_user.last_name if inline_query .from_user.last_name else ''}: {bot_telegram_id} {inline_query.query}")
 
     ratings = {"s": "Safe", "q": "Questionable", "e": "Explicit"}
     searchQuery = " ".join(inline_query.query.split(" ")[1:])
     offset = int(inline_query.offset) if inline_query.offset else 0
-
-    print(offset, searchQuery)
     try:
         if(inline_query.query.startswith("gel") and searchQuery):
             try:
@@ -696,10 +699,12 @@ async def answerInline(client, inline_query):
     except QueryIdInvalid:
         pass
 
+# End region pyrogram handlers
 app.start()
-app.send_message(owner_id, "Started")
-print("Started")
+app.send_message(owner_id, "Starting")
+print("Starting")
 idle()
-app.send_message(owner_id, "Manual Stopping")
-print("Manual Stopping")
+app.send_message(
+    owner_id, f"Stopping\nNew users since last reboot = {len(newUsers)}")
+print(f"Stopping\nNew users since last reboot = {len(newUsers)}")
 app.stop()
