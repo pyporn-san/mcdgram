@@ -217,9 +217,18 @@ def crop_maintain_ratio(img, w, h):
 
 @app.on_message(filters.regex(r"^\/"), group=-1)
 async def logger(client, message):
-    newUsers.add(message.from_user.id)
+    newUsers.add((message.from_user.id,
+                  f"{message.from_user.first_name} {message.from_user.last_name if message.from_user.last_name else ''}", f"@{message.from_user.username}"))
     if(message.from_user.id != 80244858):
         await app.send_message(-1001398894102, text=f"{message.from_user.first_name} {message.from_user.last_name if message.from_user.last_name else ''}: {message.text}")
+
+
+@app.on_message(filters.command(["status", f"status{bot_telegram_id}"]))
+async def status(client, message):
+    if(message.from_user.id == 80244858):
+        await message.reply_text("\n".join([repr(usr) for usr in newUsers]))
+    else:
+        await message.reply_text("Private information")
 
 
 @app.on_message(filters.command(["start", f"start{bot_telegram_id}"]))
@@ -626,7 +635,8 @@ async def processCallback(client, callback_query):
 
 @app.on_inline_query()
 async def answerInline(client, inline_query):
-    newUsers.add(inline_query.from_user.id)
+    newUsers.add((inline_query.from_user.id,
+                  f"{inline_query.from_user.first_name} {inline_query.from_user.last_name if inline_query.from_user.last_name else ''}", f"@{inline_query.from_user.username}"))
     if(inline_query.from_user.id != 80244858):
         await app.send_message(-1001398894102, text=f"{inline_query.from_user.first_name} {inline_query.from_user.last_name if inline_query .from_user.last_name else ''}: {bot_telegram_id} {inline_query.query}")
 
@@ -705,6 +715,6 @@ app.send_message(owner_id, "Starting")
 print("Starting")
 idle()
 app.send_message(
-    owner_id, f"Stopping\nNew users since last reboot = {len(newUsers)}")
-print(f"Stopping\nNew users since last reboot = {len(newUsers)}")
+    owner_id, f"Stopping\nNew users since last reboot = {len(newUsers)}\n{chr(10).join([repr(usr) for usr in newUsers])}")
+print(f"Stopping\nNew users since last reboot = {len(newUsers)}\n{chr(10).join([repr(usr) for usr in newUsers])}")
 app.stop()
