@@ -2,6 +2,7 @@ import asyncio
 import urllib.request
 from functools import partial, wraps
 from io import BytesIO
+from itertools import repeat
 from os import environ
 
 import dotenv
@@ -139,6 +140,8 @@ async def prepareComicText(comicPages=None, pages=None, title=None, tags=None, c
 
 
 def makeButtons(buttons, buttonTable):
+    if(isinstance(buttonTable, int)):
+        buttonTable = list(repeat(buttonTable, len(buttons)//buttonTable+1))
     buttons = iter(buttons)
     Table = []
     try:

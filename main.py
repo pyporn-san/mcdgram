@@ -2,8 +2,8 @@ from pyrogram import filters, idle, types
 from pyrogram.errors import QueryIdInvalid
 from telegraph import TelegraphException
 
-from modules import *
 from common import app, bot_telegram_id, logo_url, owner_id
+from modules import *
 
 newUsers = set()
 

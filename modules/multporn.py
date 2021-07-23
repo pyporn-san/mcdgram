@@ -49,7 +49,7 @@ async def getMultporn(client, message):
             comicList = comicList[:6]
             k = [types.InlineKeyboardButton(
                 comic["name"], callback_data=f"MULTPORN:{comic['link'].split('multporn.net')[-1]}") for comic in comicList]
-            Buttons = makeButtons(k, [2, 2, 2])
+            Buttons = makeButtons(k, 2)
             Buttons.append([types.InlineKeyboardButton(
                 f"Random{emoji.GAME_DIE}", callback_data=f"MULTPORN:{min(6, len(comicList))}RANDOM")])
             try:

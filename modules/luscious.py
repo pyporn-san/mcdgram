@@ -87,7 +87,7 @@ async def getLuscious(client, message):
 
             k = [types.InlineKeyboardButton(
                 result.name, callback_data=f"LUS{'VID' if isVideo else''}:{result.json['id']}") for result in resultList]
-            Buttons = makeButtons(k, [2, 2, 2])
+            Buttons = makeButtons(k, 2)
             Buttons.append([types.InlineKeyboardButton(
                 f"Random{emoji.GAME_DIE}", callback_data=f"LUS{'VID' if isVideo else''}:RANDOM:{min(6, len(resultList))}")])
             listOfImages = [result.thumbnail for result in resultList]

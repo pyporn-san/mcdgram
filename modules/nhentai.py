@@ -57,7 +57,7 @@ async def getNhentai(client, message):
             hentaiList = hentaiList[:6]
             k = [types.InlineKeyboardButton(hentai.title(
                 Format.Pretty), callback_data=f"NHENTAI:{hentai.id}") for hentai in hentaiList]
-            Buttons = makeButtons(k, [2, 2, 2])
+            Buttons = makeButtons(k, 2)
             Buttons.append([types.InlineKeyboardButton(
                 f"Random{emoji.GAME_DIE}", callback_data=f"NHENTAI:{min(6, len(hentaiList))}RANDOM")])
             listOfImages = [hentai.thumbnail for hentai in hentaiList]
