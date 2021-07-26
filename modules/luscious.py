@@ -126,7 +126,7 @@ async def processLusciousCallback(client, callback_query):
         await callback_query.message.reply_text("Something went wrong")
 
 
-@app.on_inline_query(filters.regex(f"^{bot_telegram_id} lus .+"))
+@app.on_inline_query(filters.regex(f"^lus .+"))
 async def answerInline(client, inline_query):
     async def temp(client, inline_query):
         searchQuery = " ".join(inline_query.query.split(" ")[1:])

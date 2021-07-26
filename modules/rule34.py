@@ -70,7 +70,7 @@ async def getRule34(client, message):
         await msg.edit_text(f"Found no results for tags: {verboseQuery}")
 
 
-@app.on_inline_query(filters.regex(f"^{bot_telegram_id} rul .+"))
+@app.on_inline_query(filters.regex(f"^rul .+"))
 async def answerInline(client, inline_query):
     async def temp(client, inline_query):
         ratings = {"s": "Safe", "q": "Questionable", "e": "Explicit"}

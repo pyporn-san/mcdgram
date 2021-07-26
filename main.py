@@ -51,18 +51,20 @@ async def answerInline(client, inline_query):
     try:
         await inline_query.answer([types.InlineQueryResultArticle(title="Click here for help", thumb_url=logo_url,
                                                                   input_message_content=types.InputTextMessageContent(f"The format for inline use is\
-                                                                                                                        {bot_telegram_id} `source` query\
-                                                                                                                        options for source are:\
+                                                                                                                        {bot_telegram_id} `Source` Query\n\
+                                                                                                                        `Source`:\
                                                                                                                         gel - for gelbooru.com\
                                                                                                                         dan - for danbooru.donmai.us (limited to only 2 tags)\
                                                                                                                         rul - for rule34.xxx\n\
                                                                                                                         nhe - for nhentai.net\
                                                                                                                         lus - for luscious.net\n\
-                                                                                                                        The first three are image boards and the query must be in the format of tags\
-                                                                                                                        Tags are seperated by space and any space in the tags is replaced with '_'\
-                                                                                                                        Tag example:\
-                                                                                                                        bunny_girl fubuki_(one-punch_man)")
-                                                                  )], cache_time=5)
+                                                                                                                        `Query`:\
+                                                                                                                        The first three are image boards and the query must be in the format of tags. Tags are seperated by space and any space in the tags is replaced with '_'\
+                                                                                                                        The other two are normal search queries\n\
+                                                                                                                        `Examples`:\
+                                                                                                                        {bot_telegram_id} dan bunny_girl fubuki_(one-punch_man)\
+                                                                                                                        {bot_telegram_id} nhe nakadashi  attack on titan")
+                                                                  ,reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton("Gelbooru",switch_inline_query_current_chat="gel"),types.InlineKeyboardButton("Danbooru",switch_inline_query_current_chat="dan"),types.InlineKeyboardButton("Rule34",switch_inline_query_current_chat="rul")],[types.InlineKeyboardButton("Nhentai",switch_inline_query_current_chat="nhe"),types.InlineKeyboardButton("Luscious",switch_inline_query_current_chat="lus")]]))], cache_time=5)
     except:
         pass
 

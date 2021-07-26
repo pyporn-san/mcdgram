@@ -77,7 +77,7 @@ async def getDanbooru(client, message):
         await msg.edit_text(f"Found no results for tags: {verboseQuery}")
 
 
-@app.on_inline_query(filters.regex(f"^{bot_telegram_id} dan .+"))
+@app.on_inline_query(filters.regex(f"^dan .+"))
 async def answerInline(client, inline_query):
     async def temp(client, inline_query):
         ratings = {"s": "Safe", "q": "Questionable", "e": "Explicit"}
