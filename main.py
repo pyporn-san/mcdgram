@@ -29,10 +29,12 @@ def welcome(client, message):
     message.reply_text(f"Welcome, {message.from_user.first_name}!\
         \n\nThis is a NSFW bot made to access various Rule34 and Hentai websites\
         \nTo see usage details for each command, simply send the command without any arguments\
-        \n\nCurrent supported websites are:\
+        \n\n`Supported boorus`:\
         \n/danbooru (danbooru.donmai.us)\
         \n/gelbooru (gelbooru.com)\
         \n/rule34 (rule34.xxx)\
+        \n/konachan (konachan.com)\
+        \n\n`Comic websites`:\
         \n/nhentai (nhentai.net)\
         \n/multporn (multporn.net)\
         \n/luscious (luscious.net)")
@@ -55,7 +57,8 @@ async def answerInline(client, inline_query):
                                                                                                                         `Source`:\
                                                                                                                         gel - for gelbooru.com\
                                                                                                                         dan - for danbooru.donmai.us (limited to only 2 tags)\
-                                                                                                                        rul - for rule34.xxx\n\
+                                                                                                                        rul - for rule34.xxx\
+                                                                                                                        kon - for konachan.com\n\
                                                                                                                         nhe - for nhentai.net\
                                                                                                                         lus - for luscious.net\n\
                                                                                                                         `Query`:\
@@ -63,8 +66,7 @@ async def answerInline(client, inline_query):
                                                                                                                         The other two are normal search queries\n\
                                                                                                                         `Examples`:\
                                                                                                                         {bot_telegram_id} dan bunny_girl fubuki_(one-punch_man)\
-                                                                                                                        {bot_telegram_id} nhe nakadashi  attack on titan")
-                                                                  ,reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton("Gelbooru",switch_inline_query_current_chat="gel"),types.InlineKeyboardButton("Danbooru",switch_inline_query_current_chat="dan"),types.InlineKeyboardButton("Rule34",switch_inline_query_current_chat="rul")],[types.InlineKeyboardButton("Nhentai",switch_inline_query_current_chat="nhe"),types.InlineKeyboardButton("Luscious",switch_inline_query_current_chat="lus")]]))], cache_time=5)
+                                                                                                                        {bot_telegram_id} nhe nakadashi  attack on titan"), reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton("Gelbooru", switch_inline_query_current_chat="gel"), types.InlineKeyboardButton("Danbooru", switch_inline_query_current_chat="dan"), types.InlineKeyboardButton("Rule34", switch_inline_query_current_chat="rul")], [types.InlineKeyboardButton("Konachan", switch_inline_query_current_chat="kon"), types.InlineKeyboardButton("Yandex", switch_inline_query_current_chat="yan")], [types.InlineKeyboardButton("Nhentai", switch_inline_query_current_chat="nhe"), types.InlineKeyboardButton("Luscious", switch_inline_query_current_chat="lus")]]))], cache_time=5)
     except:
         pass
 

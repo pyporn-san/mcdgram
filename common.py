@@ -24,10 +24,16 @@ telegraph_name = environ["TELEGRAPH_NAME"]
 telegraph_url = environ["TELEGRAPH_URL"]
 telegraph_short_name = environ["TELEGRAPH_SHORT_NAME"]
 bot_telegram_id = environ["BOT_TELEGRAM_ID"]
+
 danbooru_login = environ["DANBOORU_LOGIN"]
 danbooru_api_key = environ["DANBOORU_API_KEY"]
+
 gelbooru_id = environ["GELBOORU_ID"]
 gelbooru_api_key = environ["GELBOORU_API_KEY"]
+
+konachan_login = environ["KONACHAN_LOGIN"]
+konachan_password = environ["KONACHAN_PASSWORD"]
+
 luscious_login = environ["LUSCIOUS_LOGIN"]
 luscious_password = environ["LUSCIOUS_PASSWORD"]
 logo_url = environ["LOGO_URL"]
@@ -59,13 +65,13 @@ def async_wrap(func):
 async def inlineErrorCatching(func, client, inline_query):
     try:
         value = await func(client, inline_query)
+        return value
     except TelegraphException as e:
         x = int(e.args[0].split("_")[-1])
         errorMessage = f"please wait {x} second{'s' if x>1 else''} before trying again"
         await inline_query.answer([types.InlineQueryResultArticle(title="Please wait", input_message_content=types.InputTextMessageContent(errorMessage), description=errorMessage)], cache_time=x+1)
     except QueryIdInvalid:
         pass
-    return value
 
 # Preparing comics/video
 
