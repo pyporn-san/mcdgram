@@ -26,7 +26,7 @@ async def status(client, message):
 
 @app.on_message(filters.command(["start", f"start{bot_telegram_id}"]))
 def welcome(client, message):
-    message.reply_text(f"Welcome, {message.from_user.first_name}!\
+    message.reply_text(f"Welcome{f', {message.from_user.first_name}' if message.from_user else ''}!\
         \n\nThis is a NSFW bot made to access various Rule34 and Hentai websites\
         \nTo see usage details for each command, simply send the command without any arguments\
         \n\n`Supported boorus`:\
