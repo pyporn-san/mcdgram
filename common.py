@@ -34,8 +34,12 @@ gelbooru_api_key = environ["GELBOORU_API_KEY"]
 konachan_login = environ["KONACHAN_LOGIN"]
 konachan_password = environ["KONACHAN_PASSWORD"]
 
+yandere_login = environ["YANDERE_LOGIN"]
+yandere_password = environ["YANDERE_PASSWORD"]
+
 luscious_login = environ["LUSCIOUS_LOGIN"]
 luscious_password = environ["LUSCIOUS_PASSWORD"]
+
 logo_url = environ["LOGO_URL"]
 
 app = Client(":memory:", api_id, api_hash, bot_token=bot_token)

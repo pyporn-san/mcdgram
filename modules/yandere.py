@@ -1,23 +1,23 @@
 import random
 
 from common import (UploadError, app, async_wrap, bot_telegram_id,
-                    comicToTelegraph, inlineErrorCatching, konachan_login,
-                    konachan_password, parseComic)
+                    comicToTelegraph, inlineErrorCatching, parseComic,
+                    yandere_login, yandere_password)
 from pybooru import Moebooru
 from pyrogram import filters, types
 
-konClient = Moebooru('konachan', username=konachan_login,
-                     password=konachan_password)
+konClient = Moebooru('yandere', username=yandere_login,
+                     password=yandere_password)
 
 
-@app.on_message(filters.command(["konachan", f"konachan{bot_telegram_id}"]))
+@app.on_message(filters.command(["yandere", f"yandere{bot_telegram_id}"]))
 async def getKonachan(client, message):
     # If empty tell the usage
     if(len(message.command) == 1):
         await message.reply_text("Usage:\
-            \n/konachan tags\
+            \n/yandere tags\
             \nExample:\
-            \n/konachan rating:safe swimsuit\
+            \n/yandere rating:q no_bra\
             \n\n**Different tags are seperated by spaces. For multiword tags use \"_\" instead of space**")
         return
     # Number of things to return
@@ -48,7 +48,7 @@ async def getKonachan(client, message):
                 try:
                     fileurl = post['file_url']
                 except:
-                    fileurl = 'https://konachan.com' + post['source']
+                    fileurl = 'https://files.yande.re' + post['source']
                 images.append(fileurl)
             if(len(images) > 10):
                 raise UploadError
@@ -76,7 +76,7 @@ async def getKonachan(client, message):
         await msg.edit_text(f"Found no results for tags: {verboseQuery}")
 
 
-@app.on_inline_query(filters.regex(f"^kon .+"))
+@app.on_inline_query(filters.regex(f"^yan .+"))
 async def answerInline(client, inline_query):
     async def temp(client, inline_query):
         ratings = {"s": "Safe", "q": "Questionable", "e": "Explicit"}
@@ -85,5 +85,5 @@ async def answerInline(client, inline_query):
         images = (await async_wrap(konClient.post_list)(tags=searchQuery, page=offset*2)) + (await async_wrap(konClient.post_list)(tags=searchQuery, page=offset*2+1))
         images = [
             image for image in images if "file_url" in image.keys()]
-        await inline_query.answer([types.InlineQueryResultPhoto(image["file_url"], reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image["rating"]], url=f"https://konachan.com/post/show/{image['id']}")]]), input_message_content=types.InputTextMessageContent("Video\nClick on link below to view") if ("video" in image["tags"] or "webm" in image["tags"]) else None) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
+        await inline_query.answer([types.InlineQueryResultPhoto(image["file_url"], reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image["rating"]], url=f"https://yande.re/post/show/{image['id']}")]]), input_message_content=types.InputTextMessageContent("Video\nClick on link below to view") if ("video" in image["tags"] or "webm" in image["tags"]) else None) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
     await inlineErrorCatching(temp, client, inline_query)
