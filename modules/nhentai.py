@@ -10,7 +10,6 @@ from common import (NotFound, app, async_wrap, bot_telegram_id, comicArgs,
 
 width, height = 225, 300
 
-print("HI")
 async def prepareNhentai(query):
     if(query.lower() == "random"):
         hentaiId = Utils.get_random_id()
