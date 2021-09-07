@@ -10,9 +10,10 @@ newUsers = set()
 
 @app.on_message(filters.regex(r"^\/"), group=-1)
 async def logger(client, message):
-    newUsers.add((message.from_user.id,
-                  f"{message.from_user.first_name} {message.from_user.last_name if message.from_user.last_name else ''}", f"@{message.from_user.username}"))
-    if(message.from_user.id != 80244858):
+    if(message.from_user):
+        newUsers.add((message.from_user.id,
+                      f"{message.from_user.first_name} {message.from_user.last_name if message.from_user.last_name else ''}", f"@{message.from_user.username}"))
+    if(message.from_user and message.from_user.id != 80244858):
         await app.send_message(-1001398894102, text=f"{message.from_user.first_name} {message.from_user.last_name if message.from_user.last_name else ''}: {message.text}")
 
 
