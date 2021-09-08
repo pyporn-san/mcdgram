@@ -27,7 +27,7 @@ async def searchNhentai(query, page=1):
     try:
         hentaiList = await async_wrap(Utils.search_by_query)(query, page=page)
         assert(len(hentaiList) > 0)
-        return List(hentaiList)
+        return list(hentaiList)
     except:
         raise NotFound
 
