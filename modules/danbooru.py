@@ -83,7 +83,7 @@ async def answerInline(client, inline_query):
         ratings = {"s": "Safe", "q": "Questionable", "e": "Explicit"}
         searchQuery = " ".join(inline_query.query.split(" ")[1:])
         offset = int(inline_query.offset) if inline_query.offset else 0
-        images = (await async_wrap(danClient.post_list)(tags=searchQuery, page=offset*2)) + (await async_wrap(danClient.post_list)(tags=searchQuery, page=offset*2+1))
+        images = (await async_wrap(danClient.post_list)(tags=searchQuery, page=offset*2+1)) + (await async_wrap(danClient.post_list)(tags=searchQuery, page=offset*2+2))
         images = [
             image for image in images if "file_url" in image.keys()]
         await inline_query.answer([types.InlineQueryResultPhoto(image["file_url"], reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image["rating"]], url=f"https://danbooru.donmai.us/posts/{image['id']}")]]), input_message_content=types.InputTextMessageContent("Video\nClick on link below to view") if ("video" in image["tag_string"] or "webm" in image["tag_string"]) else None) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
