@@ -9,4 +9,4 @@ pygelbooru==0.3.1
 Pillow==8.3.2
 python-dotenv==0.19.0
 TgCrypto==1.2.2
-urllib3==1.26.6
+urllib3==1.26.7
