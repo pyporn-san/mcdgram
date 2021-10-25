@@ -65,10 +65,14 @@ async def getLuscious(client, message):
             \nExamples:\
             \n/luscious gravity falls\
             \n/luscious video dropout\
-            \n\n4. /luscious random", disable_web_page_preview=True)
+            \n\n4. /luscious random\
+            \n\n\n**Note:** The video feature is currently unavailable", disable_web_page_preview=True)
         return
     try:
         isVideo = message.command[1].lower() == "video"
+        if(isVideo):
+            await message.reply_text("Currently the video feature for luscious is unavailable")
+            return
         if(message.command[1+isVideo].isnumeric() or message.command[1+isVideo].lower().startswith("https://") or message.command[1+isVideo] == "random"):
             if(isVideo):
                 result = await prepareLusciousVideo(message.command[2], Lus)
