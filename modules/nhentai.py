@@ -50,7 +50,7 @@ async def getNhentai(client, message):
     try:
         if(len(message.command) == 2 and (message.command[1] == "random" or message.command[1].isnumeric())):
             doujin = await prepareNhentai(message.command[1])
-            await sendComic(doujin, message)
+            await sendComic(doujin, message, reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton("Download pdf",url=f"https://cin.pw/g/{doujin.id}")]]))
         else:
             hentaiList = await searchNhentai(" ".join(message.command[1:]))
             hentaiList = hentaiList[:6]
