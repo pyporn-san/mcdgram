@@ -135,11 +135,11 @@ async def sendVideo(videoUrl, name, url, message):
     await msg.delete()
 
 
-async def sendComic(obj, message=None):
+async def sendComic(obj, message=None,reply_markup=None):
     kwargs = comicArgs(obj)
 
     msg = await message.reply_text(f"[{kwargs['title']}]({kwargs['url']})\n\nPages: {len(kwargs['comicPages'])}")
-    await message.reply_text(await prepareComicText(**kwargs))
+    await message.reply_text(await prepareComicText(**kwargs), reply_markup=reply_markup)
 
     await msg.delete()
 
