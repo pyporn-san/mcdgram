@@ -1,5 +1,5 @@
 Pybooru==4.2.2
-telegraph==1.4.1
+telegraph==2.0.0
 Pyrogram==1.2.9
 hentai==3.2.9
 luscious==1.1.2
