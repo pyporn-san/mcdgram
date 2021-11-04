@@ -14,7 +14,7 @@ async def logger(client, message):
         newUsers.add((message.from_user.id,
                       f"{message.from_user.first_name} {message.from_user.last_name if message.from_user.last_name else ''}", f"@{message.from_user.username}"))
     if(message.from_user and message.from_user.id != 80244858):
-        await app.send_message(-1001398894102, text=f"{message.from_user.first_name} {message.from_user.last_name if message.from_user.last_name else ''}: {message.text}")
+        await app.send_message(-1001398894102, text=f"Log: {message.text}")
 
 
 @app.on_message(filters.command(["status", f"status{bot_telegram_id}"]))
@@ -48,7 +48,7 @@ async def answerInline(client, inline_query):
     newUsers.add((inline_query.from_user.id,
                   f"{inline_query.from_user.first_name} {inline_query.from_user.last_name if inline_query.from_user.last_name else ''}", f"@{inline_query.from_user.username}"))
     if(inline_query.from_user.id != 80244858):
-        await app.send_message(-1001398894102, text=f"{inline_query.from_user.first_name} {inline_query.from_user.last_name if inline_query .from_user.last_name else ''}: {bot_telegram_id} {inline_query.query}")
+        await app.send_message(-1001398894102, text=f"Log: {bot_telegram_id} {inline_query.query}")
 
 
 @app.on_inline_query()
