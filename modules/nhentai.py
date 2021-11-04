@@ -1,14 +1,14 @@
 import random
 from os import unlink
 
+from common import (NotFound, app, async_wrap, bot_telegram_id, comicArgs,
+                    comicToTelegraph, inlineErrorCatching, makeButtons,
+                    makeCollage, prepareComicText, sendComic, telegraphArgs)
 from hentai import Format, Hentai, Utils
 from pyrogram import emoji, filters, types
 
-from common import (NotFound, app, async_wrap, bot_telegram_id, comicArgs,
-                      comicToTelegraph, inlineErrorCatching, makeButtons, makeCollage,
-                      prepareComicText, sendComic, telegraphArgs)
-
 width, height = 225, 300
+
 
 async def prepareNhentai(query):
     if(query.lower() == "random"):
@@ -50,7 +50,7 @@ async def getNhentai(client, message):
     try:
         if(len(message.command) == 2 and (message.command[1] == "random" or message.command[1].isnumeric())):
             doujin = await prepareNhentai(message.command[1])
-            await sendComic(doujin, message, reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton("Download pdf",url=f"https://cin.pw/g/{doujin.id}")]]))
+            await sendComic(doujin, message, reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton("Download as PDF", url=f"https://cin.pw/g/{doujin.id}")], [types.InlineKeyboardButton("Instant view mirror", url=f"https://cin.pw/v/{doujin.id}")]]))
         else:
             hentaiList = await searchNhentai(" ".join(message.command[1:]))
             hentaiList = hentaiList[:6]
@@ -108,8 +108,8 @@ async def answerMultpornInline(client, inline_query):
             hentaiList = await searchNhentai(searchQuery)
             hentaiList = hentaiList[:5]
         await inline_query.answer([types.InlineQueryResultArticle(title=h.title(Format.Pretty),
-                                                                    input_message_content=types.InputTextMessageContent(await prepareComicText(noLink=True, **comicArgs(h, noContent=True))),
-                                                                    thumb_url=h.thumbnail,
-                                                                    reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton("Instant view", url=await comicToTelegraph(**telegraphArgs(h)))]]))
-                                    for h in hentaiList], cache_time=15)
+                                                                  input_message_content=types.InputTextMessageContent(await prepareComicText(noLink=True, **comicArgs(h, noContent=True))),
+                                                                  thumb_url=h.thumbnail,
+                                                                  reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton("Instant view", url=await comicToTelegraph(**telegraphArgs(h)))], [types.InlineKeyboardButton("Download as PDF", url=f"https://cin.pw/g/{h.id}")], [types.InlineKeyboardButton("Instant view mirror", url=f"https://cin.pw/v/{h.id}")]]))
+                                   for h in hentaiList], cache_time=15)
     await inlineErrorCatching(temp, client, inline_query)
