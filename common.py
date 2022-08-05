@@ -42,7 +42,7 @@ luscious_password = environ["LUSCIOUS_PASSWORD"]
 
 logo_url = environ["LOGO_URL"]
 
-app = Client(":memory:", api_id, api_hash, bot_token=bot_token)
+app = Client("MCDGram", api_id, api_hash, bot_token=bot_token, in_memory=True)
 telegraph = Telegraph()
 telegraph.create_account(author_name=telegraph_name,
                          author_url=telegraph_url, short_name=telegraph_short_name)
