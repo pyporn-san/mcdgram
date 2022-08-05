@@ -12,6 +12,7 @@
       "size": "free"
     }
   },
+  "stack":"heroku-22",
   "env": {
     "API_ID": {
       "description": "App api_id from https://my.telegram.org"
