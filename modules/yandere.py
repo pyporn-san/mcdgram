@@ -6,7 +6,7 @@ from common import (UploadError, app, async_wrap, bot_telegram_id,
 from pybooru import Moebooru
 from pyrogram import filters, types
 
-konClient = Moebooru('yandere', username=yandere_login,
+yanClient = Moebooru('yandere', username=yandere_login,
                      password=yandere_password)
 
 
@@ -18,7 +18,7 @@ async def getKonachan(client, message):
             \n/yandere tags\
             \nExample:\
             \n/yandere rating:q no_bra\
-            \n\n**Different tags are seperated by spaces. For multiword tags use \"_\" instead of space**")
+            \n\n**Different tags are separated by spaces. For multiword tags use \"_\" instead of space**")
         return
     # Number of things to return
     if(message.command[1].isnumeric()):
@@ -32,7 +32,7 @@ async def getKonachan(client, message):
     verboseQuery = query.replace(" ", ", ").replace("_", " ")
     msg = await message.reply_text(f"Searching for {limit} result{'s' if limit>1 else ''} with tags: {verboseQuery}")
     try:
-        posts = konClient.post_list(tags=query, random=True, limit=200)
+        posts = yanClient.post_list(tags=query, random=True, limit=200)
         if(len(posts) >= limit):
             msg = await msg.edit_text(f"Found {limit} result{'s' if limit>1 else ''}. Sending")
         else:
@@ -46,10 +46,10 @@ async def getKonachan(client, message):
             images = []
             for post in posts:
                 try:
-                    fileurl = post['file_url']
+                    fileUrl = post['file_url']
                 except:
-                    fileurl = 'https://files.yande.re' + post['source']
-                images.append(fileurl)
+                    fileUrl = 'https://files.yande.re' + post['source']
+                images.append(fileUrl)
             if(len(images) > 10):
                 raise UploadError
             mediaGroup = []
@@ -82,8 +82,16 @@ async def answerInline(client, inline_query):
         ratings = {"s": "Safe", "q": "Questionable", "e": "Explicit"}
         searchQuery = " ".join(inline_query.query.split(" ")[1:])
         offset = int(inline_query.offset) if inline_query.offset else 0
-        images = (await async_wrap(konClient.post_list)(tags=searchQuery, page=offset*2)) + (await async_wrap(konClient.post_list)(tags=searchQuery, page=offset*2+1))
+        images = (await async_wrap(yanClient.post_list)(tags=searchQuery, page=offset, limit=50))
         images = [
             image for image in images if "file_url" in image.keys()]
-        await inline_query.answer([types.InlineQueryResultPhoto(image["file_url"], reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image["rating"]], url=f"https://yande.re/post/show/{image['id']}")]]), input_message_content=types.InputTextMessageContent("Video\nClick on link below to view") if ("video" in image["tags"] or "webm" in image["tags"]) else None) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
+        await inline_query.answer([types.InlineQueryResultPhoto(
+            image["file_url"],
+            reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(
+                ratings[image["rating"]],
+                url=f"https://yande.re/post/show/{image['id']}")]]),
+            input_message_content=types.InputTextMessageContent("Video\nClick on link below to view") if ("video" in image["tags"] or "webm" in image["tags"]) else None) for image in images],
+            is_gallery=True,
+            next_offset=str(offset+1) if images else "",
+            cache_time=15)
     await inlineErrorCatching(temp, client, inline_query)

@@ -66,7 +66,7 @@ async def answerInline(client, inline_query):
                                                                                                                         nhe - for nhentai.net\
                                                                                                                         lus - for luscious.net\n\
                                                                                                                         `Query`:\
-                                                                                                                        The first three are image boards and the query must be in the format of tags. Tags are seperated by space and any space in the tags is replaced with '_'\
+                                                                                                                        The first three are image boards and the query must be in the format of tags. Tags are separated by space and any space in the tags is replaced with '_'\
                                                                                                                         The other two are normal search queries\n\
                                                                                                                         `Examples`:\
                                                                                                                         {bot_telegram_id} dan bunny_girl fubuki_(one-punch_man)\

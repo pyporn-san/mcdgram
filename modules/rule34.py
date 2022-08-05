@@ -19,7 +19,7 @@ async def getRule34(client, message):
             \n/rule34 tags\
             \nExample:\
             \n/rule34 creampie deepthroat\
-            \n\n**Different tags are seperated by spaces. For multiword tags use \"_\" instead of space**")
+            \n\n**Different tags are separated by spaces. For multiword tags use \"_\" instead of space**")
         return
     # Number of things to return
     if(message.command[1].isnumeric()):

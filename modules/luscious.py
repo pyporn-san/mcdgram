@@ -6,9 +6,9 @@ from pyrogram import emoji, filters, types
 from luscious import Luscious
 
 from common import (NotFound, app, async_wrap, bot_telegram_id, comicArgs,
-                      comicToTelegraph, inlineErrorCatching, luscious_login, luscious_password,
-                      makeButtons, makeCollage, prepareComicText, sendComic,
-                      sendVideo, telegraphArgs)
+                    comicToTelegraph, inlineErrorCatching, luscious_login, luscious_password,
+                    makeButtons, makeCollage, prepareComicText, sendComic,
+                    sendVideo, telegraphArgs)
 
 Lus = Luscious(luscious_login, luscious_password)
 
@@ -141,8 +141,8 @@ async def answerInline(client, inline_query):
             hentaiList = hentaiList[:5]
             hentaiList = [Lus.getAlbum(i) for i in hentaiList]
         await inline_query.answer([types.InlineQueryResultArticle(title=result.name,
-                                                                input_message_content=types.InputTextMessageContent(await prepareComicText(noLink=True, **comicArgs(result, noContent=True))),
-                                                                thumb_url=result.thumbnail,
-                                                                reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton("Instant view", url=await comicToTelegraph(**telegraphArgs(result)))]]))
-                                for result in hentaiList], cache_time=15)
+                                                                  input_message_content=types.InputTextMessageContent(await prepareComicText(noLink=True, **comicArgs(result, noContent=True))),
+                                                                  thumb_url=result.thumbnail,
+                                                                  reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton("Instant view", url=await comicToTelegraph(**telegraphArgs(result)))]]))
+                                   for result in hentaiList], cache_time=15)
     await inlineErrorCatching(temp, client, inline_query)

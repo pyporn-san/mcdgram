@@ -5,7 +5,7 @@ from pygelbooru import Gelbooru
 from pyrogram import filters, types
 
 from common import (UploadError, app, bot_telegram_id, comicToTelegraph,
-                      gelbooru_api_key, gelbooru_id, inlineErrorCatching, parseComic)
+                    gelbooru_api_key, gelbooru_id, inlineErrorCatching, parseComic)
 
 gelClient = Gelbooru(gelbooru_api_key, gelbooru_id)
 
@@ -18,7 +18,7 @@ async def getGelbooru(client, message):
             \n/gelbooru tags\
             \nExample:\
             \n/gelbooru rating:explicit bunny_girl\
-            \n\n**Different tags are seperated by spaces. For multiword tags use \"_\" instead of space**")
+            \n\n**Different tags are separated by spaces. For multiword tags use \"_\" instead of space**")
         return
     # Number of things to return
     if(message.command[1].isnumeric()):
@@ -73,13 +73,19 @@ async def getGelbooru(client, message):
 @app.on_inline_query(filters.regex(f"^gel .+"))
 async def answerInline(client, inline_query):
     async def temp(client, inline_query):
-        ratings = {"s": "Safe", "q": "Questionable", "e": "Explicit"}
+        ratings = {"general": "General", "sensitive": "Sensitive",
+                   "questionable": "Questionable", "explicit": "Explicit"}
         searchQuery = " ".join(inline_query.query.split(" ")[1:])
         offset = int(inline_query.offset) if inline_query.offset else 0
-        try:
-            images = (await gelClient.search_posts(tags=searchQuery.split(" "), page=offset//2))
-            images = images[:50] if not offset % 2 else images[50:]
-            await inline_query.answer([types.InlineQueryResultPhoto(str(image), reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(ratings[image.rating], url=f"https://gelbooru.com/index.php?page=post&s=view&id={image.id}")]]), input_message_content=types.InputTextMessageContent("Video\nClick on link below to view") if ("video" in image.tags or "webm" in image.tags) else None) for image in images], is_gallery=True, next_offset=str(offset+1) if images else "", cache_time=15)
-        except:
-            await inline_query.answer([])
+        images = (await gelClient.search_posts(tags=searchQuery.split(" "), page=offset//2))
+        images = images[:50] if not offset % 2 else images[50:]
+        await inline_query.answer([types.InlineQueryResultPhoto(
+            str(image),
+            reply_markup=types.InlineKeyboardMarkup([[types.InlineKeyboardButton(
+                ratings[image.rating],
+                url=f"https://gelbooru.com/index.php?page=post&s=view&id={image.id}")]]),
+            input_message_content=types.InputTextMessageContent("Video\nClick on link below to view") if ("video" in image.tags or "webm" in image.tags) else None) for image in images],
+            is_gallery=True,
+            next_offset=str(offset+1) if images else "",
+            cache_time=15)
     await inlineErrorCatching(temp, client, inline_query)

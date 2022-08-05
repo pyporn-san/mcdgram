@@ -73,7 +73,7 @@ async def getNhentai(client, message):
         return
 
 
-@app.on_message(filters.private & filters.regex("^[0-9]*$") & ~filters.edited)
+@app.on_message(filters.private & filters.regex("^[0-9]*$"))
 async def nhentaiNoCommand(client, message):
     message.command = ["/nhentai", message.matches[0].string]
     await getNhentai(client, message)
