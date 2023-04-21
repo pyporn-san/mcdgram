@@ -1,6 +1,6 @@
 Pybooru==4.2.2
 telegraph==2.2.0
-Pyrogram==2.0.102
+Pyrogram==2.0.104
 hentai==3.2.10
 luscious==1.1.4
 multporn==1.4.0
